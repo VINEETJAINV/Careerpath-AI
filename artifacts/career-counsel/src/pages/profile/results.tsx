@@ -8,6 +8,8 @@ import {
   getGetProfileSummaryQueryKey,
   useGetProfile,
   getGetProfileQueryKey,
+  useGetProfileAssessmentResult,
+  getGetProfileAssessmentResultQueryKey,
 } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -26,6 +28,7 @@ import {
   Target,
   ChevronDown,
   ChevronUp,
+  Star,
 } from "lucide-react";
 
 export default function Results() {
@@ -46,6 +49,10 @@ export default function Results() {
     query: { enabled: !!id, queryKey: getGetCareerSuggestionsQueryKey(id) }
   });
 
+  const { data: assessmentResult, isLoading: isLoadingResult } = useGetProfileAssessmentResult(id, {
+    query: { enabled: !!id, queryKey: getGetProfileAssessmentResultQueryKey(id) }
+  });
+
   const topSuggestion = suggestions?.[0];
   const alternativeSuggestions = suggestions?.slice(1) ?? [];
 
@@ -64,6 +71,9 @@ export default function Results() {
     return { have, missing, percent };
   };
 
+  const scoreColour = (score: number) =>
+    score >= 70 ? "text-green-600" : score >= 45 ? "text-amber-600" : "text-red-600";
+
   return (
     <AppLayout>
       <div className="container mx-auto max-w-6xl py-12 px-4 space-y-12">
@@ -76,7 +86,7 @@ export default function Results() {
           </p>
         </div>
 
-        {/* Top Match + Score */}
+        {/* Score + Top Match */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card className="md:col-span-2 bg-primary text-primary-foreground border-none shadow-lg">
             <CardHeader>
@@ -114,37 +124,111 @@ export default function Results() {
             </CardContent>
           </Card>
 
-          <Card className="border-2">
+          {/* Readiness Score Card */}
+          <Card className="border-2 flex flex-col justify-between">
             <CardHeader className="pb-2">
-              <CardTitle className="text-lg">Quick Stats</CardTitle>
+              <CardTitle className="text-lg">Readiness Score</CardTitle>
+              <CardDescription>Based on your assessment answers</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4 pt-2">
-              {topSuggestion ? (
+              {isLoadingResult ? (
+                <Skeleton className="h-20 w-full" />
+              ) : assessmentResult ? (
                 <>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground border rounded-md p-3">
-                    <DollarSign className="h-4 w-4 flex-shrink-0 text-primary" />
-                    <div>
-                      <p className="text-xs font-semibold text-foreground">Salary Range</p>
-                      <p>{topSuggestion.salaryRange}</p>
-                    </div>
+                  <div className="text-center py-2">
+                    <span className={`text-6xl font-display font-bold ${scoreColour(assessmentResult.score)}`}>
+                      {assessmentResult.score}
+                    </span>
+                    <span className="text-2xl text-muted-foreground">/100</span>
                   </div>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground border rounded-md p-3">
-                    <Clock className="h-4 w-4 flex-shrink-0 text-primary" />
-                    <div>
-                      <p className="text-xs font-semibold text-foreground">Time to Achieve</p>
-                      <p>{topSuggestion.timeToAchieve}</p>
-                    </div>
-                  </div>
+                  <Progress value={assessmentResult.score} className="h-2.5" />
+                  <p className="text-xs text-muted-foreground text-center">
+                    Completed {new Date(assessmentResult.completedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                  </p>
                 </>
               ) : (
                 <>
-                  <Skeleton className="h-16 w-full" />
-                  <Skeleton className="h-16 w-full" />
+                  {topSuggestion && (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground border rounded-md p-3">
+                      <DollarSign className="h-4 w-4 flex-shrink-0 text-primary" />
+                      <div>
+                        <p className="text-xs font-semibold text-foreground">Salary Range</p>
+                        <p>{topSuggestion.salaryRange}</p>
+                      </div>
+                    </div>
+                  )}
                 </>
               )}
             </CardContent>
           </Card>
         </div>
+
+        {/* AI Analysis — real persisted data */}
+        <Card className="border shadow-sm">
+          <CardHeader className="bg-muted/30 border-b">
+            <CardTitle className="flex items-center gap-2">
+              <BrainCircuit className="h-5 w-5 text-primary" />
+              AI Analysis
+            </CardTitle>
+            <CardDescription>
+              An honest, unsparing look at where you stand
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-6 space-y-8">
+            {isLoadingResult ? (
+              <div className="space-y-3">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-11/12" />
+                <Skeleton className="h-4 w-4/5" />
+                <Skeleton className="h-4 w-full mt-4" />
+                <Skeleton className="h-4 w-3/4" />
+              </div>
+            ) : assessmentResult?.analysis ? (
+              <>
+                {/* Written analysis paragraphs */}
+                <div className="space-y-4">
+                  {assessmentResult.analysis.split("\n\n").filter(Boolean).map((para, i) => (
+                    <p key={i} className="text-base leading-relaxed text-foreground/90">{para}</p>
+                  ))}
+                </div>
+
+                {/* Strengths & Weaknesses */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2 border-t">
+                  <div className="space-y-3">
+                    <h4 className="flex items-center gap-2 font-bold text-green-700">
+                      <Star className="h-4 w-4" /> Core Strengths
+                    </h4>
+                    <ul className="space-y-2">
+                      {assessmentResult.topStrengths.map((s, i) => (
+                        <li key={i} className="flex items-start gap-2 text-sm">
+                          <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                          {s}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div className="space-y-3">
+                    <h4 className="flex items-center gap-2 font-bold text-red-700">
+                      <AlertTriangle className="h-4 w-4" /> Areas to Improve
+                    </h4>
+                    <ul className="space-y-2">
+                      {assessmentResult.areasToImprove.map((s, i) => (
+                        <li key={i} className="flex items-start gap-2 text-sm">
+                          <AlertTriangle className="h-4 w-4 text-red-500 mt-0.5 flex-shrink-0" />
+                          {s}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <p className="text-muted-foreground italic text-sm">
+                Complete the career assessment to see your personalised AI analysis here.
+              </p>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Skill Analysis for Top Career */}
         {topSuggestion && (
@@ -170,10 +254,7 @@ export default function Results() {
                           {percent}% match
                         </span>
                       </div>
-                      <Progress
-                        value={percent}
-                        className="h-3"
-                      />
+                      <Progress value={percent} className="h-3" />
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -276,7 +357,7 @@ export default function Results() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {alternativeSuggestions.map((sug) => {
                   const isExpanded = expandedCard === sug.id;
-                  const { have, missing, percent } = getSkillMatch(sug.requiredSkills ?? []);
+                  const { percent } = getSkillMatch(sug.requiredSkills ?? []);
                   return (
                     <Card key={sug.id} className="border shadow-sm flex flex-col" data-testid={`card-career-${sug.id}`}>
                       <CardHeader className="border-b pb-4">
@@ -303,7 +384,6 @@ export default function Results() {
                           <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{sug.timeToAchieve}</span>
                         </div>
 
-                        {/* Skill readiness mini-bar */}
                         <div className="space-y-1">
                           <div className="flex justify-between text-xs text-muted-foreground">
                             <span>Skill readiness</span>

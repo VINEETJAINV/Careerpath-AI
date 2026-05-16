@@ -38,7 +38,8 @@ import type {
   Profile,
   ProfileInput,
   ProfileSummary,
-  ProfileUpdate
+  ProfileUpdate,
+  StoredAssessmentResult
 } from './api.schemas';
 
 import { customFetch } from '../custom-fetch';
@@ -789,6 +790,83 @@ export function useGetCareerRoadmap<TData = Awaited<ReturnType<typeof getCareerR
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getGetCareerRoadmapQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getGetProfileAssessmentResultUrl = (id: number,) => {
+
+
+
+
+  return `/api/profiles/${id}/assessment-result`
+}
+
+/**
+ * @summary Get the completed assessment result (analysis, strengths, weaknesses) for a profile
+ */
+export const getProfileAssessmentResult = async (id: number, options?: RequestInit): Promise<StoredAssessmentResult> => {
+
+  return customFetch<StoredAssessmentResult>(getGetProfileAssessmentResultUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetProfileAssessmentResultQueryKey = (id: number,) => {
+    return [
+    `/api/profiles/${id}/assessment-result`
+    ] as const;
+    }
+
+
+export const getGetProfileAssessmentResultQueryOptions = <TData = Awaited<ReturnType<typeof getProfileAssessmentResult>>, TError = ErrorType<ApiError>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getProfileAssessmentResult>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetProfileAssessmentResultQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getProfileAssessmentResult>>> = ({ signal }) => getProfileAssessmentResult(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(id), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getProfileAssessmentResult>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetProfileAssessmentResultQueryResult = NonNullable<Awaited<ReturnType<typeof getProfileAssessmentResult>>>
+export type GetProfileAssessmentResultQueryError = ErrorType<ApiError>
+
+
+/**
+ * @summary Get the completed assessment result (analysis, strengths, weaknesses) for a profile
+ */
+
+export function useGetProfileAssessmentResult<TData = Awaited<ReturnType<typeof getProfileAssessmentResult>>, TError = ErrorType<ApiError>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getProfileAssessmentResult>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetProfileAssessmentResultQueryOptions(id,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

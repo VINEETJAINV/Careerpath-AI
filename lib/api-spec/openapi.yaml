@@ -220,6 +220,31 @@ paths:
               schema:
                 $ref: "#/components/schemas/CareerRoadmap"
 
+  /profiles/{id}/assessment-result:
+    get:
+      operationId: getProfileAssessmentResult
+      tags: [assessments]
+      summary: Get the completed assessment result (analysis, strengths, weaknesses) for a profile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Completed assessment result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StoredAssessmentResult"
+        "404":
+          description: No completed assessment found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
   /profiles/{id}/summary:
     get:
       operationId: getProfileSummary
@@ -495,6 +520,37 @@ components:
         - profileId
         - status
         - createdAt
+
+    StoredAssessmentResult:
+      type: object
+      properties:
+        assessmentId:
+          type: integer
+        profileId:
+          type: integer
+        score:
+          type: integer
+        analysis:
+          type: string
+        topStrengths:
+          type: array
+          items:
+            type: string
+        areasToImprove:
+          type: array
+          items:
+            type: string
+        completedAt:
+          type: string
+          format: date-time
+      required:
+        - assessmentId
+        - profileId
+        - score
+        - analysis
+        - topStrengths
+        - areasToImprove
+        - completedAt
 
     AssessmentInput:
       type: object

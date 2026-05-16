@@ -89,6 +89,16 @@ export interface Assessment {
   completedAt?: string | null;
 }
 
+export interface StoredAssessmentResult {
+  assessmentId: number;
+  profileId: number;
+  score: number;
+  analysis: string;
+  topStrengths: string[];
+  areasToImprove: string[];
+  completedAt: string;
+}
+
 export interface AssessmentInput {
   profileId: number;
 }

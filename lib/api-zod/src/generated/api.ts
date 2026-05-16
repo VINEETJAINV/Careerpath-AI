@@ -226,6 +226,24 @@ export const GetCareerRoadmapResponse = zod.object({
 
 
 /**
+ * @summary Get the completed assessment result (analysis, strengths, weaknesses) for a profile
+ */
+export const GetProfileAssessmentResultParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const GetProfileAssessmentResultResponse = zod.object({
+  "assessmentId": zod.number(),
+  "profileId": zod.number(),
+  "score": zod.number(),
+  "analysis": zod.string(),
+  "topStrengths": zod.array(zod.string()),
+  "areasToImprove": zod.array(zod.string()),
+  "completedAt": zod.coerce.date()
+})
+
+
+/**
  * @summary Get a quick summary with top career match and assessment status
  */
 export const GetProfileSummaryParams = zod.object({

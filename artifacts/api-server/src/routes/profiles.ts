@@ -13,6 +13,7 @@ import {
   GetProfileParams,
   UpdateProfileParams,
   GetProfileSummaryParams,
+  GetProfileAssessmentResultParams,
 } from "@workspace/api-zod";
 
 const router = Router();
@@ -98,6 +99,39 @@ router.patch("/profiles/:id", async (req, res) => {
   } catch (err) {
     req.log.error({ err }, "Failed to update profile");
     res.status(500).json({ error: "Failed to update profile" });
+  }
+});
+
+router.get("/profiles/:id/assessment-result", async (req, res) => {
+  const params = GetProfileAssessmentResultParams.safeParse({ id: Number(req.params.id) });
+  if (!params.success) {
+    res.status(400).json({ error: "Invalid profile ID" });
+    return;
+  }
+  try {
+    const [completed] = await db
+      .select()
+      .from(assessmentsTable)
+      .where(eq(assessmentsTable.profileId, params.data.id))
+      .orderBy(desc(assessmentsTable.completedAt));
+
+    if (!completed || completed.status !== "completed") {
+      res.status(404).json({ error: "No completed assessment found for this profile" });
+      return;
+    }
+
+    res.json({
+      assessmentId: completed.id,
+      profileId: completed.profileId,
+      score: completed.score ?? 0,
+      analysis: completed.analysis ?? "",
+      topStrengths: completed.topStrengths ? (JSON.parse(completed.topStrengths) as string[]) : [],
+      areasToImprove: completed.areasToImprove ? (JSON.parse(completed.areasToImprove) as string[]) : [],
+      completedAt: completed.completedAt,
+    });
+  } catch (err) {
+    req.log.error({ err }, "Failed to get assessment result");
+    res.status(500).json({ error: "Failed to get assessment result" });
   }
 });
 

@@ -30,3 +30,4 @@ export * from './profileSummary';
 export * from './profileUpdate';
 export * from './questionAnswer';
 export * from './roadmapMilestone';
+export * from './storedAssessmentResult';
