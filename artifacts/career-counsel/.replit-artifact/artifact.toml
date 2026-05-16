@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "CareerPath AI"
+version = "1.0.0"
+id = "artifacts/career-counsel"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 25944
+
+[services.development]
+run = "pnpm --filter @workspace/career-counsel run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/career-counsel", "run", "build" ]
+publicDir = "artifacts/career-counsel/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "25944"
+BASE_PATH = "/"

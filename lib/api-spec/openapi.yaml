@@ -1,22 +1,28 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: CareerPath AI - Career Counselling Platform API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: profiles
+    description: User career profile operations
+  - name: assessments
+    description: Career assessment and test operations
+  - name: careers
+    description: Career suggestions and roadmap operations
+  - name: openai
+    description: OpenAI AI chat operations
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +30,327 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /profiles:
+    post:
+      operationId: createProfile
+      tags: [profiles]
+      summary: Create a new user career profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProfileInput"
+      responses:
+        "201":
+          description: Created profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Profile"
+    get:
+      operationId: listProfiles
+      tags: [profiles]
+      summary: List all profiles
+      responses:
+        "200":
+          description: List of profiles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Profile"
+
+  /profiles/{id}:
+    get:
+      operationId: getProfile
+      tags: [profiles]
+      summary: Get a profile by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Profile with career data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Profile"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+    patch:
+      operationId: updateProfile
+      tags: [profiles]
+      summary: Update a profile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProfileUpdate"
+      responses:
+        "200":
+          description: Updated profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Profile"
+
+  /assessments:
+    post:
+      operationId: createAssessment
+      tags: [assessments]
+      summary: Start a new career assessment for a profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AssessmentInput"
+      responses:
+        "201":
+          description: Created assessment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Assessment"
+
+  /assessments/{id}:
+    get:
+      operationId: getAssessment
+      tags: [assessments]
+      summary: Get assessment with questions and answers
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Assessment with questions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AssessmentWithQuestions"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /assessments/{id}/submit:
+    post:
+      operationId: submitAssessment
+      tags: [assessments]
+      summary: Submit answers for an assessment
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AssessmentSubmission"
+      responses:
+        "200":
+          description: Assessment result with career suggestions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AssessmentResult"
+
+  /profiles/{id}/career-suggestions:
+    get:
+      operationId: getCareerSuggestions
+      tags: [careers]
+      summary: Get AI-generated career suggestions for a profile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of career suggestions with honest analysis
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CareerSuggestion"
+
+  /profiles/{id}/roadmap:
+    get:
+      operationId: getCareerRoadmap
+      tags: [careers]
+      summary: Get a detailed career roadmap for a profile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Career roadmap with milestones
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CareerRoadmap"
+
+  /profiles/{id}/summary:
+    get:
+      operationId: getProfileSummary
+      tags: [profiles]
+      summary: Get a quick summary with top career match and assessment status
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Profile summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProfileSummary"
+
+  /openai/conversations:
+    get:
+      operationId: listOpenaiConversations
+      tags: [openai]
+      summary: List all AI counselling conversations
+      responses:
+        "200":
+          description: List of conversations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/OpenaiConversation"
+    post:
+      operationId: createOpenaiConversation
+      tags: [openai]
+      summary: Create a new AI counselling conversation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OpenaiConversationInput"
+      responses:
+        "201":
+          description: Created conversation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OpenaiConversation"
+
+  /openai/conversations/{id}:
+    get:
+      operationId: getOpenaiConversation
+      tags: [openai]
+      summary: Get conversation with messages
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Conversation with messages
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OpenaiConversationWithMessages"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OpenaiError"
+    delete:
+      operationId: deleteOpenaiConversation
+      tags: [openai]
+      summary: Delete a conversation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /openai/conversations/{id}/messages:
+    get:
+      operationId: listOpenaiMessages
+      tags: [openai]
+      summary: List messages in a conversation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/OpenaiMessage"
+    post:
+      operationId: sendOpenaiMessage
+      tags: [openai]
+      summary: Send a message and receive a streaming AI response
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OpenaiMessageInput"
+      responses:
+        "200":
+          description: SSE stream of assistant text chunks
+          content:
+            text/event-stream: {}
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +361,415 @@ components:
       required:
         - status
 
+    ApiError:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    Profile:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        age:
+          type: ["integer", "null"]
+        educationLevel:
+          type: string
+        fieldOfStudy:
+          type: ["string", "null"]
+        workExperience:
+          type: ["string", "null"]
+        skills:
+          type: ["string", "null"]
+        interests:
+          type: ["string", "null"]
+        goals:
+          type: ["string", "null"]
+        conversationId:
+          type: ["integer", "null"]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - educationLevel
+        - createdAt
+        - updatedAt
+
+    ProfileInput:
+      type: object
+      properties:
+        name:
+          type: string
+        age:
+          type: integer
+        educationLevel:
+          type: string
+        fieldOfStudy:
+          type: string
+        workExperience:
+          type: string
+        skills:
+          type: string
+        interests:
+          type: string
+        goals:
+          type: string
+      required:
+        - name
+        - educationLevel
+
+    ProfileUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        age:
+          type: integer
+        educationLevel:
+          type: string
+        fieldOfStudy:
+          type: string
+        workExperience:
+          type: string
+        skills:
+          type: string
+        interests:
+          type: string
+        goals:
+          type: string
+
+    ProfileSummary:
+      type: object
+      properties:
+        profileId:
+          type: integer
+        name:
+          type: string
+        topCareerMatch:
+          type: ["string", "null"]
+        compatibilityScore:
+          type: ["integer", "null"]
+        assessmentCompleted:
+          type: boolean
+        totalConversations:
+          type: integer
+        lastActivity:
+          type: ["string", "null"]
+          format: date-time
+      required:
+        - profileId
+        - name
+        - assessmentCompleted
+        - totalConversations
+
+    Assessment:
+      type: object
+      properties:
+        id:
+          type: integer
+        profileId:
+          type: integer
+        status:
+          type: string
+          enum: [pending, completed]
+        score:
+          type: ["integer", "null"]
+        createdAt:
+          type: string
+          format: date-time
+        completedAt:
+          type: ["string", "null"]
+          format: date-time
+      required:
+        - id
+        - profileId
+        - status
+        - createdAt
+
+    AssessmentInput:
+      type: object
+      properties:
+        profileId:
+          type: integer
+      required:
+        - profileId
+
+    AssessmentQuestion:
+      type: object
+      properties:
+        id:
+          type: integer
+        assessmentId:
+          type: integer
+        questionText:
+          type: string
+        questionType:
+          type: string
+          enum: [multiple_choice, scale, text]
+        options:
+          type: ["string", "null"]
+        answer:
+          type: ["string", "null"]
+        orderIndex:
+          type: integer
+      required:
+        - id
+        - assessmentId
+        - questionText
+        - questionType
+        - orderIndex
+
+    AssessmentWithQuestions:
+      type: object
+      properties:
+        id:
+          type: integer
+        profileId:
+          type: integer
+        status:
+          type: string
+        questions:
+          type: array
+          items:
+            $ref: "#/components/schemas/AssessmentQuestion"
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - profileId
+        - status
+        - questions
+        - createdAt
+
+    QuestionAnswer:
+      type: object
+      properties:
+        questionId:
+          type: integer
+        answer:
+          type: string
+      required:
+        - questionId
+        - answer
+
+    AssessmentSubmission:
+      type: object
+      properties:
+        answers:
+          type: array
+          items:
+            $ref: "#/components/schemas/QuestionAnswer"
+      required:
+        - answers
+
+    AssessmentResult:
+      type: object
+      properties:
+        assessmentId:
+          type: integer
+        score:
+          type: integer
+        analysis:
+          type: string
+        topStrengths:
+          type: array
+          items:
+            type: string
+        areasToImprove:
+          type: array
+          items:
+            type: string
+        careerSuggestions:
+          type: array
+          items:
+            $ref: "#/components/schemas/CareerSuggestion"
+      required:
+        - assessmentId
+        - score
+        - analysis
+        - topStrengths
+        - areasToImprove
+        - careerSuggestions
+
+    CareerSuggestion:
+      type: object
+      properties:
+        id:
+          type: integer
+        profileId:
+          type: integer
+        careerTitle:
+          type: string
+        compatibilityScore:
+          type: integer
+        description:
+          type: string
+        pros:
+          type: array
+          items:
+            type: string
+        cons:
+          type: array
+          items:
+            type: string
+        requiredSkills:
+          type: array
+          items:
+            type: string
+        salaryRange:
+          type: string
+        timeToAchieve:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - profileId
+        - careerTitle
+        - compatibilityScore
+        - description
+        - pros
+        - cons
+        - requiredSkills
+        - salaryRange
+        - timeToAchieve
+        - createdAt
+
+    RoadmapMilestone:
+      type: object
+      properties:
+        phase:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        duration:
+          type: string
+        actions:
+          type: array
+          items:
+            type: string
+      required:
+        - phase
+        - title
+        - description
+        - duration
+        - actions
+
+    CareerRoadmap:
+      type: object
+      properties:
+        profileId:
+          type: integer
+        targetCareer:
+          type: string
+        totalDuration:
+          type: string
+        milestones:
+          type: array
+          items:
+            $ref: "#/components/schemas/RoadmapMilestone"
+        generatedAt:
+          type: string
+          format: date-time
+      required:
+        - profileId
+        - targetCareer
+        - totalDuration
+        - milestones
+        - generatedAt
+
+    OpenaiConversation:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - title
+        - createdAt
+
+    OpenaiMessage:
+      type: object
+      properties:
+        id:
+          type: integer
+        conversationId:
+          type: integer
+        role:
+          type: string
+        content:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - conversationId
+        - role
+        - content
+        - createdAt
+
+    OpenaiConversationInput:
+      type: object
+      properties:
+        title:
+          type: string
+        profileId:
+          type: ["integer", "null"]
+      required:
+        - title
+
+    OpenaiMessageInput:
+      type: object
+      properties:
+        content:
+          type: string
+      required:
+        - content
+
+    OpenaiConversationWithMessages:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        messages:
+          type: array
+          items:
+            $ref: "#/components/schemas/OpenaiMessage"
+      required:
+        - id
+        - title
+        - createdAt
+        - messages
+
+    OpenaiError:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
