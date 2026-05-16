@@ -12,6 +12,7 @@ import Results from "@/pages/profile/results";
 import Roadmap from "@/pages/profile/roadmap";
 import ChatIndex from "@/pages/chat/index";
 import ChatView from "@/pages/chat/view";
+import Community from "@/pages/community";
 
 const queryClient = new QueryClient();
 

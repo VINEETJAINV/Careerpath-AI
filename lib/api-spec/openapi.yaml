@@ -220,6 +220,26 @@ paths:
               schema:
                 $ref: "#/components/schemas/CareerRoadmap"
 
+  /community/insights:
+    get:
+      operationId: getCommunityInsights
+      tags: [profiles]
+      summary: Aggregated community stats — answer distributions, top careers, strengths, score spread
+      parameters:
+        - name: profileId
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: When provided, includes this profile's own answers alongside community data
+      responses:
+        "200":
+          description: Community insights
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CommunityInsights"
+
   /profiles/{id}/assessment-result:
     get:
       operationId: getProfileAssessmentResult
@@ -520,6 +540,91 @@ components:
         - profileId
         - status
         - createdAt
+
+    ScoreBucket:
+      type: object
+      properties:
+        range:
+          type: string
+        count:
+          type: integer
+      required: [range, count]
+
+    CareerStat:
+      type: object
+      properties:
+        careerTitle:
+          type: string
+        count:
+          type: integer
+        avgCompatibilityScore:
+          type: number
+      required: [careerTitle, count, avgCompatibilityScore]
+
+    FrequencyItem:
+      type: object
+      properties:
+        label:
+          type: string
+        count:
+          type: integer
+      required: [label, count]
+
+    QuestionBreakdown:
+      type: object
+      properties:
+        questionText:
+          type: string
+        questionType:
+          type: string
+        answers:
+          type: array
+          items:
+            $ref: "#/components/schemas/FrequencyItem"
+        myAnswer:
+          type: ["string", "null"]
+      required: [questionText, questionType, answers]
+
+    CommunityInsights:
+      type: object
+      properties:
+        totalMembers:
+          type: integer
+        assessmentsCompleted:
+          type: integer
+        avgScore:
+          type: number
+        myScore:
+          type: ["integer", "null"]
+        scoreDistribution:
+          type: array
+          items:
+            $ref: "#/components/schemas/ScoreBucket"
+        topCareers:
+          type: array
+          items:
+            $ref: "#/components/schemas/CareerStat"
+        topStrengths:
+          type: array
+          items:
+            $ref: "#/components/schemas/FrequencyItem"
+        topAreasToImprove:
+          type: array
+          items:
+            $ref: "#/components/schemas/FrequencyItem"
+        questionBreakdowns:
+          type: array
+          items:
+            $ref: "#/components/schemas/QuestionBreakdown"
+      required:
+        - totalMembers
+        - assessmentsCompleted
+        - avgScore
+        - scoreDistribution
+        - topCareers
+        - topStrengths
+        - topAreasToImprove
+        - questionBreakdowns
 
     StoredAssessmentResult:
       type: object

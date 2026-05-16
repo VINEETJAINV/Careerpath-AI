@@ -9,6 +9,9 @@ export function Navbar() {
           <span className="font-display text-xl font-bold tracking-tight text-primary">CareerPath AI</span>
         </Link>
         <nav className="flex items-center gap-4">
+          <Link href="/community">
+            <Button variant="ghost" className="font-medium" data-testid="nav-community">Community</Button>
+          </Link>
           <Link href="/chat">
             <Button variant="ghost" className="font-medium" data-testid="nav-chat">Coaching</Button>
           </Link>
