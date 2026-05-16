@@ -127,11 +127,15 @@ export const GetAssessmentResponse = zod.object({
   "id": zod.number(),
   "profileId": zod.number(),
   "status": zod.string(),
+  "score": zod.number().nullish(),
+  "analysis": zod.string().nullish(),
+  "topStrengths": zod.string().nullish(),
+  "areasToImprove": zod.string().nullish(),
   "questions": zod.array(zod.object({
   "id": zod.number(),
   "assessmentId": zod.number(),
   "questionText": zod.string(),
-  "questionType": zod.enum(['multiple_choice', 'scale', 'text']),
+  "questionType": zod.enum(['multiple_choice', 'multiple_select', 'scale', 'text']),
   "options": zod.string().nullish(),
   "answer": zod.string().nullish(),
   "orderIndex": zod.number()

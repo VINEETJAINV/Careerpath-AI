@@ -515,7 +515,7 @@ components:
           type: string
         questionType:
           type: string
-          enum: [multiple_choice, scale, text]
+          enum: [multiple_choice, multiple_select, scale, text]
         options:
           type: ["string", "null"]
         answer:
@@ -538,6 +538,14 @@ components:
           type: integer
         status:
           type: string
+        score:
+          type: ["integer", "null"]
+        analysis:
+          type: ["string", "null"]
+        topStrengths:
+          type: ["string", "null"]
+        areasToImprove:
+          type: ["string", "null"]
         questions:
           type: array
           items:

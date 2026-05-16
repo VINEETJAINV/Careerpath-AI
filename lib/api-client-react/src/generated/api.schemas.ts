@@ -98,6 +98,7 @@ export type AssessmentQuestionQuestionType = typeof AssessmentQuestionQuestionTy
 
 export const AssessmentQuestionQuestionType = {
   multiple_choice: 'multiple_choice',
+  multiple_select: 'multiple_select',
   scale: 'scale',
   text: 'text',
 } as const;
@@ -118,6 +119,14 @@ export interface AssessmentWithQuestions {
   id: number;
   profileId: number;
   status: string;
+  /** @nullable */
+  score?: number | null;
+  /** @nullable */
+  analysis?: string | null;
+  /** @nullable */
+  topStrengths?: string | null;
+  /** @nullable */
+  areasToImprove?: string | null;
   questions: AssessmentQuestion[];
   createdAt: string;
 }

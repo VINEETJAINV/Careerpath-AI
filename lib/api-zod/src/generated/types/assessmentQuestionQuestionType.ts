@@ -11,6 +11,7 @@ export type AssessmentQuestionQuestionType = typeof AssessmentQuestionQuestionTy
 
 export const AssessmentQuestionQuestionType = {
   multiple_choice: 'multiple_choice',
+  multiple_select: 'multiple_select',
   scale: 'scale',
   text: 'text',
 } as const;

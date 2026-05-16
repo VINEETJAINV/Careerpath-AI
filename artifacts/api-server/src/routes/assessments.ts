@@ -37,14 +37,15 @@ const ASSESSMENT_QUESTIONS = [
     orderIndex: 1,
   },
   {
-    questionText: "What type of impact do you most want to have through your work?",
-    questionType: "multiple_choice" as const,
+    questionText: "Which types of impact do you want your work to have? (Select all that apply)",
+    questionType: "multiple_select" as const,
     options: JSON.stringify([
       "Help people directly (healthcare, education, social work)",
       "Build technology that improves lives",
       "Create art, culture, or media",
       "Drive business growth and wealth creation",
       "Advance scientific or academic knowledge",
+      "Protect the environment and natural world",
     ]),
     orderIndex: 2,
   },
@@ -66,14 +67,17 @@ const ASSESSMENT_QUESTIONS = [
     orderIndex: 4,
   },
   {
-    questionText: "Which of these describes your strongest natural ability?",
-    questionType: "multiple_choice" as const,
+    questionText: "Which of these describe your natural abilities? (Select all that apply)",
+    questionType: "multiple_select" as const,
     options: JSON.stringify([
       "Logical and analytical reasoning",
       "Empathy and understanding people",
       "Creative and innovative thinking",
       "Leadership and influencing others",
       "Attention to detail and precision",
+      "Writing and verbal communication",
+      "Building and fixing things (hands-on)",
+      "Numbers, data and financial analysis",
     ]),
     orderIndex: 5,
   },
@@ -89,19 +93,28 @@ const ASSESSMENT_QUESTIONS = [
     orderIndex: 6,
   },
   {
-    questionText: "Rate your willingness to invest in years of further education or training for your career (1 = minimal further study, 10 = willing to study for many years)",
-    questionType: "scale" as const,
-    options: null,
+    questionText: "Which work environments appeal to you? (Select all that apply)",
+    questionType: "multiple_select" as const,
+    options: JSON.stringify([
+      "Remote or work-from-home",
+      "Office-based with a team",
+      "Outdoors or field-based",
+      "Travelling and meeting clients",
+      "Lab or research environment",
+      "Hospital or healthcare setting",
+      "Creative studio or workshop",
+      "Startup or entrepreneurial setting",
+    ]),
     orderIndex: 7,
   },
   {
-    questionText: "Describe in your own words: what does your ideal work environment look like?",
-    questionType: "text" as const,
+    questionText: "Rate your willingness to invest in years of further education or training for your career (1 = minimal further study, 10 = willing to study for many years)",
+    questionType: "scale" as const,
     options: null,
     orderIndex: 8,
   },
   {
-    questionText: "What is your biggest fear or concern about choosing the wrong career?",
+    questionText: "Describe in your own words: what does your ideal career look like in 5 years?",
     questionType: "text" as const,
     options: null,
     orderIndex: 9,
@@ -236,24 +249,29 @@ ${qaText}
 Respond ONLY with a valid JSON object in this exact structure:
 {
   "score": <integer 1-100 representing overall career readiness/clarity score>,
-  "analysis": "<2-3 paragraphs of honest, direct analysis of this person's career situation — include strengths AND weaknesses equally>",
+  "analysis": "<3-4 paragraphs of honest, direct analysis of this person's career situation — include strengths AND weaknesses equally. Be frank about gaps and blind spots.>",
   "topStrengths": ["<strength 1>", "<strength 2>", "<strength 3>"],
-  "areasToImprove": ["<weakness 1>", "<weakness 2>", "<weakness 3>"],
+  "areasToImprove": ["<weakness/gap 1>", "<weakness/gap 2>", "<weakness/gap 3>"],
+  "skillAnalysis": {
+    "existingSkills": ["<skill they already have 1>", "<skill they already have 2>", "<skill they already have 3>"],
+    "skillGaps": ["<critical gap 1>", "<critical gap 2>", "<critical gap 3>"],
+    "quickWins": ["<skill they can develop quickly 1>", "<skill they can develop quickly 2>"]
+  },
   "careerSuggestions": [
     {
       "careerTitle": "<career name>",
       "compatibilityScore": <integer 0-100>,
       "description": "<2-3 sentence description of this career and why it fits or partially fits>",
-      "pros": ["<pro 1>", "<pro 2>", "<pro 3>"],
-      "cons": ["<con 1>", "<con 2>", "<con 3 — be honest about challenges>"],
-      "requiredSkills": ["<skill 1>", "<skill 2>", "<skill 3>"],
-      "salaryRange": "<realistic salary range for this career in their likely geography>",
+      "pros": ["<genuine pro 1>", "<genuine pro 2>", "<genuine pro 3>"],
+      "cons": ["<real con 1>", "<real con 2 — be honest about challenges>", "<real con 3>"],
+      "requiredSkills": ["<skill 1>", "<skill 2>", "<skill 3>", "<skill 4>"],
+      "salaryRange": "<realistic salary range in GBP per year>",
       "timeToAchieve": "<realistic time estimate to be job-ready>"
     }
   ]
 }
 
-Provide exactly 3-5 career suggestions. Be brutally honest about the cons — if something is hard, say so. Include at least one suggestion that is a strong match AND at least one that is an honest stretch goal.`,
+Provide exactly 4-5 career suggestions ordered from HIGHEST to LOWEST compatibility score. Be brutally honest about the cons — if something is hard, say so.`,
         },
       ],
     });
@@ -264,6 +282,11 @@ Provide exactly 3-5 career suggestions. Be brutally honest about the cons — if
       analysis: string;
       topStrengths: string[];
       areasToImprove: string[];
+      skillAnalysis?: {
+        existingSkills: string[];
+        skillGaps: string[];
+        quickWins: string[];
+      };
       careerSuggestions: Array<{
         careerTitle: string;
         compatibilityScore: number;
@@ -290,7 +313,14 @@ Provide exactly 3-5 career suggestions. Be brutally honest about the cons — if
 
     await db
       .update(assessmentsTable)
-      .set({ status: "completed", score: parsed.score, completedAt: new Date() })
+      .set({
+        status: "completed",
+        score: parsed.score,
+        analysis: parsed.analysis,
+        topStrengths: JSON.stringify(parsed.topStrengths ?? []),
+        areasToImprove: JSON.stringify(parsed.areasToImprove ?? []),
+        completedAt: new Date(),
+      })
       .where(eq(assessmentsTable.id, params.data.id));
 
     const savedSuggestions = [];
@@ -323,6 +353,7 @@ Provide exactly 3-5 career suggestions. Be brutally honest about the cons — if
       analysis: parsed.analysis,
       topStrengths: parsed.topStrengths ?? [],
       areasToImprove: parsed.areasToImprove ?? [],
+      skillAnalysis: parsed.skillAnalysis ?? { existingSkills: [], skillGaps: [], quickWins: [] },
       careerSuggestions: savedSuggestions,
     });
   } catch (err) {

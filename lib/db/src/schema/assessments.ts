@@ -7,6 +7,9 @@ export const assessmentsTable = pgTable("assessments", {
   profileId: integer("profile_id").notNull(),
   status: text("status").notNull().default("pending"),
   score: integer("score"),
+  analysis: text("analysis"),
+  topStrengths: text("top_strengths"),
+  areasToImprove: text("areas_to_improve"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   completedAt: timestamp("completed_at"),
 });

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { eq } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 import { db } from "@workspace/db";
 import {
   profilesTable,
@@ -130,7 +130,7 @@ router.get("/profiles/:id/summary", async (req, res) => {
       .select()
       .from(careerSuggestionsTable)
       .where(eq(careerSuggestionsTable.profileId, params.data.id))
-      .orderBy(careerSuggestionsTable.compatibilityScore)
+      .orderBy(desc(careerSuggestionsTable.compatibilityScore))
       .limit(1);
 
     const topMatch = suggestions[0];
