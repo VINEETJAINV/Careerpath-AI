@@ -210,6 +210,10 @@ export const GetCareerRoadmapParams = zod.object({
   "id": zod.coerce.number()
 })
 
+export const GetCareerRoadmapQueryParams = zod.object({
+  "career": zod.coerce.string().optional().describe('Target career title — if omitted, defaults to the top suggested career')
+})
+
 export const GetCareerRoadmapResponse = zod.object({
   "profileId": zod.number(),
   "targetCareer": zod.string(),
@@ -262,6 +266,13 @@ export const GetCommunityInsightsResponse = zod.object({
   "count": zod.number()
 })),
   "myAnswer": zod.string().nullish()
+})),
+  "textResponses": zod.array(zod.object({
+  "questionText": zod.string(),
+  "responses": zod.array(zod.object({
+  "displayName": zod.string(),
+  "text": zod.string()
+}))
 }))
 })
 

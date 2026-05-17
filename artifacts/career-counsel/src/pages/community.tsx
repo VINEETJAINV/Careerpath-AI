@@ -333,6 +333,48 @@ export default function Community() {
           </div>
         )}
 
+        {/* Open-text responses */}
+        {((data?.textResponses ?? []).length > 0 || isLoading) && (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-display font-bold">What People Are Saying</h2>
+              <p className="text-muted-foreground mt-1">
+                Real, unfiltered answers to the open question — in their own words.
+              </p>
+            </div>
+            {isLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {[1,2,3,4].map(i => <Skeleton key={i} className="h-36 w-full" />)}
+              </div>
+            ) : (
+              (data?.textResponses ?? []).map((group) => (
+                <div key={group.questionText} className="space-y-4">
+                  <h3 className="text-base font-semibold text-muted-foreground italic">
+                    "{group.questionText}"
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {group.responses.map((r, i) => (
+                      <Card key={i} className="border bg-muted/20">
+                        <CardContent className="pt-5 pb-4">
+                          <p className="text-sm leading-relaxed text-foreground/90 mb-3">
+                            "{r.text}"
+                          </p>
+                          <div className="flex items-center gap-2">
+                            <div className="h-6 w-6 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary">
+                              {r.displayName[0]?.toUpperCase()}
+                            </div>
+                            <span className="text-xs font-medium text-muted-foreground">{r.displayName}</span>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        )}
+
         {/* Empty state */}
         {!isLoading && (data?.assessmentsCompleted ?? 0) === 0 && (
           <Card className="border-dashed border-2 text-center py-16">

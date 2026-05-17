@@ -29,6 +29,7 @@ import type {
   CareerRoadmap,
   CareerSuggestion,
   CommunityInsights,
+  GetCareerRoadmapParams,
   GetCommunityInsightsParams,
   HealthStatus,
   OpenaiConversation,
@@ -727,20 +728,29 @@ export function useGetCareerSuggestions<TData = Awaited<ReturnType<typeof getCar
 
 
 
-export const getGetCareerRoadmapUrl = (id: number,) => {
+export const getGetCareerRoadmapUrl = (id: number,
+    params?: GetCareerRoadmapParams,) => {
+  const normalizedParams = new URLSearchParams();
 
+  Object.entries(params || {}).forEach(([key, value]) => {
 
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
 
+  const stringifiedParams = normalizedParams.toString();
 
-  return `/api/profiles/${id}/roadmap`
+  return stringifiedParams.length > 0 ? `/api/profiles/${id}/roadmap?${stringifiedParams}` : `/api/profiles/${id}/roadmap`
 }
 
 /**
  * @summary Get a detailed career roadmap for a profile
  */
-export const getCareerRoadmap = async (id: number, options?: RequestInit): Promise<CareerRoadmap> => {
+export const getCareerRoadmap = async (id: number,
+    params?: GetCareerRoadmapParams, options?: RequestInit): Promise<CareerRoadmap> => {
 
-  return customFetch<CareerRoadmap>(getGetCareerRoadmapUrl(id),
+  return customFetch<CareerRoadmap>(getGetCareerRoadmapUrl(id,params),
   {
     ...options,
     method: 'GET'
@@ -753,23 +763,25 @@ export const getCareerRoadmap = async (id: number, options?: RequestInit): Promi
 
 
 
-export const getGetCareerRoadmapQueryKey = (id: number,) => {
+export const getGetCareerRoadmapQueryKey = (id: number,
+    params?: GetCareerRoadmapParams,) => {
     return [
-    `/api/profiles/${id}/roadmap`
+    `/api/profiles/${id}/roadmap`, ...(params ? [params] : [])
     ] as const;
     }
 
 
-export const getGetCareerRoadmapQueryOptions = <TData = Awaited<ReturnType<typeof getCareerRoadmap>>, TError = ErrorType<unknown>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCareerRoadmap>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export const getGetCareerRoadmapQueryOptions = <TData = Awaited<ReturnType<typeof getCareerRoadmap>>, TError = ErrorType<unknown>>(id: number,
+    params?: GetCareerRoadmapParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCareerRoadmap>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetCareerRoadmapQueryKey(id);
+  const queryKey =  queryOptions?.queryKey ?? getGetCareerRoadmapQueryKey(id,params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCareerRoadmap>>> = ({ signal }) => getCareerRoadmap(id, { signal, ...requestOptions });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCareerRoadmap>>> = ({ signal }) => getCareerRoadmap(id,params, { signal, ...requestOptions });
 
 
 
@@ -787,11 +799,12 @@ export type GetCareerRoadmapQueryError = ErrorType<unknown>
  */
 
 export function useGetCareerRoadmap<TData = Awaited<ReturnType<typeof getCareerRoadmap>>, TError = ErrorType<unknown>>(
- id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCareerRoadmap>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+ id: number,
+    params?: GetCareerRoadmapParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCareerRoadmap>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
-  const queryOptions = getGetCareerRoadmapQueryOptions(id,options)
+  const queryOptions = getGetCareerRoadmapQueryOptions(id,params,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

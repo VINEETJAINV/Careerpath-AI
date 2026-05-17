@@ -212,6 +212,12 @@ paths:
           required: true
           schema:
             type: integer
+        - name: career
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Target career title — if omitted, defaults to the top suggested career
       responses:
         "200":
           description: Career roadmap with milestones
@@ -616,6 +622,10 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/QuestionBreakdown"
+        textResponses:
+          type: array
+          items:
+            $ref: "#/components/schemas/TextResponseGroup"
       required:
         - totalMembers
         - assessmentsCompleted
@@ -625,6 +635,27 @@ components:
         - topStrengths
         - topAreasToImprove
         - questionBreakdowns
+        - textResponses
+
+    TextResponseItem:
+      type: object
+      properties:
+        displayName:
+          type: string
+        text:
+          type: string
+      required: [displayName, text]
+
+    TextResponseGroup:
+      type: object
+      properties:
+        questionText:
+          type: string
+        responses:
+          type: array
+          items:
+            $ref: "#/components/schemas/TextResponseItem"
+      required: [questionText, responses]
 
     StoredAssessmentResult:
       type: object

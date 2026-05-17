@@ -51,14 +51,29 @@ router.get("/profiles/:id/roadmap", async (req, res) => {
       return;
     }
 
-    const [topSuggestion] = await db
-      .select()
-      .from(careerSuggestionsTable)
-      .where(eq(careerSuggestionsTable.profileId, params.data.id))
-      .orderBy(desc(careerSuggestionsTable.compatibilityScore))
-      .limit(1);
+    const requestedCareer = req.query["career"] as string | undefined;
 
-    const targetCareer = topSuggestion?.careerTitle ?? "General Career";
+    let targetCareer: string;
+    if (requestedCareer) {
+      const allSuggestions = await db
+        .select()
+        .from(careerSuggestionsTable)
+        .where(eq(careerSuggestionsTable.profileId, params.data.id))
+        .orderBy(desc(careerSuggestionsTable.compatibilityScore));
+
+      const match = allSuggestions.find(
+        (s) => s.careerTitle.toLowerCase() === requestedCareer.toLowerCase()
+      );
+      targetCareer = match?.careerTitle ?? requestedCareer;
+    } else {
+      const [topSuggestion] = await db
+        .select()
+        .from(careerSuggestionsTable)
+        .where(eq(careerSuggestionsTable.profileId, params.data.id))
+        .orderBy(desc(careerSuggestionsTable.compatibilityScore))
+        .limit(1);
+      targetCareer = topSuggestion?.careerTitle ?? "General Career";
+    }
 
     const profileContext = `Name: ${profile.name}, Education: ${profile.educationLevel}, Field: ${profile.fieldOfStudy ?? "Unknown"}, Skills: ${profile.skills ?? "None"}, Interests: ${profile.interests ?? "None"}, Goals: ${profile.goals ?? "Not specified"}, Experience: ${profile.workExperience ?? "None"}`;
 

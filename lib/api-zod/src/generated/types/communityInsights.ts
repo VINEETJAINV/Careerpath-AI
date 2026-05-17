@@ -9,6 +9,7 @@ import type { CareerStat } from './careerStat';
 import type { FrequencyItem } from './frequencyItem';
 import type { QuestionBreakdown } from './questionBreakdown';
 import type { ScoreBucket } from './scoreBucket';
+import type { TextResponseGroup } from './textResponseGroup';
 
 export interface CommunityInsights {
   totalMembers: number;
@@ -21,4 +22,5 @@ export interface CommunityInsights {
   topStrengths: FrequencyItem[];
   topAreasToImprove: FrequencyItem[];
   questionBreakdowns: QuestionBreakdown[];
+  textResponses: TextResponseGroup[];
 }

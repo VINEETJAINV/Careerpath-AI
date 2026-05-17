@@ -107,6 +107,18 @@ router.get("/community/insights", async (req, res) => {
         completedAssessments.find((a) => a.profileId === profileId)?.id ?? null;
     }
 
+    // Build assessmentId → first name map for anonymised text responses
+    const profileIds = [...new Set(completedAssessments.map((a) => a.profileId))];
+    const profileRows = profileIds.length > 0
+      ? await db.select().from(profilesTable)
+      : [];
+    const profileNameMap = new Map<number, string>(
+      profileRows.map((p) => [p.id, p.name.split(" ")[0] ?? "Member"])
+    );
+    const assessmentProfileMap = new Map<number, string>(
+      completedAssessments.map((a) => [a.id, profileNameMap.get(a.profileId) ?? "Member"])
+    );
+
     let allQuestions: (typeof assessmentQuestionsTable.$inferSelect)[] = [];
     if (completedAssessmentIds.length > 0) {
       allQuestions = await db.select().from(assessmentQuestionsTable);
@@ -119,9 +131,20 @@ router.get("/community/insights", async (req, res) => {
       string,
       { questionType: string; answerFreq: Map<string, number>; myAnswer: string | null }
     >();
+    const textGroupMap = new Map<string, { displayName: string; text: string }[]>();
 
     for (const q of allQuestions) {
-      if (q.questionType === "open_text" || !q.answer) continue;
+      if (!q.answer) continue;
+
+      if (q.questionType === "text" || q.questionType === "open_text") {
+        const existing = textGroupMap.get(q.questionText) ?? [];
+        existing.push({
+          displayName: assessmentProfileMap.get(q.assessmentId) ?? "Member",
+          text: q.answer.trim(),
+        });
+        textGroupMap.set(q.questionText, existing);
+        continue;
+      }
 
       const existing = questionMap.get(q.questionText);
       const entry = existing ?? {
@@ -157,6 +180,10 @@ router.get("/community/insights", async (req, res) => {
       })
     );
 
+    const textResponses = Array.from(textGroupMap.entries()).map(
+      ([questionText, responses]) => ({ questionText, responses })
+    );
+
     res.json({
       totalMembers,
       assessmentsCompleted,
@@ -167,6 +194,7 @@ router.get("/community/insights", async (req, res) => {
       topStrengths,
       topAreasToImprove,
       questionBreakdowns,
+      textResponses,
     });
   } catch (err) {
     req.log.error({ err }, "Failed to get community insights");

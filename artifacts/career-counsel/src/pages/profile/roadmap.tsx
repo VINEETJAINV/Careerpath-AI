@@ -1,4 +1,4 @@
-import { useParams, Link } from "wouter";
+import { useParams, Link, useSearch } from "wouter";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { 
   useGetCareerRoadmap,
@@ -8,14 +8,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { Map as MapIcon, ArrowRight, CheckCircle2, ChevronRight } from "lucide-react";
+import { Map as MapIcon, CheckCircle2, ChevronRight, ArrowLeft } from "lucide-react";
 
 export default function Roadmap() {
   const params = useParams();
   const id = Number(params.id);
+  const search = useSearch();
+  const careerParam = new URLSearchParams(search).get("career") ?? undefined;
 
-  const { data: roadmap, isLoading } = useGetCareerRoadmap(id, {
-    query: { enabled: !!id, queryKey: getGetCareerRoadmapQueryKey(id) }
+  const { data: roadmap, isLoading } = useGetCareerRoadmap(id, careerParam ? { career: careerParam } : {}, {
+    query: { enabled: !!id, queryKey: getGetCareerRoadmapQueryKey(id, careerParam ? { career: careerParam } : {}) }
   });
 
   return (
@@ -80,8 +82,12 @@ export default function Roadmap() {
           ))}
         </div>
 
-        <div className="text-center pt-8 border-t">
-          <p className="text-muted-foreground mb-6">Need help executing this plan?</p>
+        <div className="flex flex-col sm:flex-row gap-4 items-center justify-center pt-8 border-t">
+          <Link href={`/profile/${id}/results`}>
+            <Button variant="outline" size="lg" data-testid="btn-back-results">
+              <ArrowLeft className="mr-2 h-4 w-4" /> Back to Results
+            </Button>
+          </Link>
           <Link href={`/chat`}>
             <Button size="lg" className="px-8" data-testid="btn-talk-coach">
               Talk to AI Coach <ChevronRight className="ml-2 h-4 w-4" />

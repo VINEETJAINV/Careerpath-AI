@@ -113,6 +113,16 @@ export interface QuestionBreakdown {
   myAnswer?: string | null;
 }
 
+export interface TextResponseItem {
+  displayName: string;
+  text: string;
+}
+
+export interface TextResponseGroup {
+  questionText: string;
+  responses: TextResponseItem[];
+}
+
 export interface CommunityInsights {
   totalMembers: number;
   assessmentsCompleted: number;
@@ -124,6 +134,7 @@ export interface CommunityInsights {
   topStrengths: FrequencyItem[];
   topAreasToImprove: FrequencyItem[];
   questionBreakdowns: QuestionBreakdown[];
+  textResponses: TextResponseGroup[];
 }
 
 export interface StoredAssessmentResult {
@@ -260,6 +271,13 @@ export interface OpenaiConversationWithMessages {
 export interface OpenaiError {
   error: string;
 }
+
+export type GetCareerRoadmapParams = {
+/**
+ * Target career title — if omitted, defaults to the top suggested career
+ */
+career?: string;
+};
 
 export type GetCommunityInsightsParams = {
 /**

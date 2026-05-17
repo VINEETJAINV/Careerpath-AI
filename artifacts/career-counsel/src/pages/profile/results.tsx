@@ -29,6 +29,7 @@ import {
   ChevronDown,
   ChevronUp,
   Star,
+  Map as MapIcon,
 } from "lucide-react";
 
 export default function Results() {
@@ -427,19 +428,30 @@ export default function Results() {
                           </div>
                         )}
 
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="w-full text-xs h-7"
-                          onClick={() => setExpandedCard(isExpanded ? null : sug.id)}
-                          data-testid={`btn-expand-${sug.id}`}
-                        >
-                          {isExpanded ? (
-                            <><ChevronUp className="h-3 w-3 mr-1" /> Show Less</>
-                          ) : (
-                            <><ChevronDown className="h-3 w-3 mr-1" /> Pros, Cons & Skills</>
-                          )}
-                        </Button>
+                        <div className="flex gap-2 pt-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="flex-1 text-xs h-7"
+                            onClick={() => setExpandedCard(isExpanded ? null : sug.id)}
+                            data-testid={`btn-expand-${sug.id}`}
+                          >
+                            {isExpanded ? (
+                              <><ChevronUp className="h-3 w-3 mr-1" /> Show Less</>
+                            ) : (
+                              <><ChevronDown className="h-3 w-3 mr-1" /> Pros, Cons & Skills</>
+                            )}
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="flex-1 text-xs h-7 border-primary/40 text-primary hover:bg-primary/5"
+                            onClick={() => setLocation(`/profile/${id}/roadmap?career=${encodeURIComponent(sug.careerTitle)}`)}
+                            data-testid={`btn-roadmap-${sug.id}`}
+                          >
+                            <MapIcon className="h-3 w-3 mr-1" /> Build Roadmap
+                          </Button>
+                        </div>
                       </CardContent>
                     </Card>
                   );
