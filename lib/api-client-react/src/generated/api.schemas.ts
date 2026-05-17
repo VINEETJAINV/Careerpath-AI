@@ -272,6 +272,153 @@ export interface OpenaiError {
   error: string;
 }
 
+export interface AuthUser {
+  id: string;
+  /** @nullable */
+  email: string | null;
+  /** @nullable */
+  firstName: string | null;
+  /** @nullable */
+  lastName: string | null;
+  /** @nullable */
+  profileImageUrl: string | null;
+}
+
+export interface AuthUserEnvelope {
+  user: AuthUser | null;
+}
+
+export interface CommunityMember {
+  profileId: number;
+  name: string;
+  /** @nullable */
+  topCareer: string | null;
+  /** @nullable */
+  compatibilityScore: number | null;
+  assessmentCompleted: boolean;
+  createdAt: string;
+}
+
+export interface ProgressEntry {
+  id: number;
+  profileId: number;
+  careerTitle: string;
+  milestoneIndex: number;
+  phaseIndex: number;
+  completed: boolean;
+  /** @nullable */
+  completedAt?: string | null;
+}
+
+export interface UserSkill {
+  id: number;
+  profileId: number;
+  skillName: string;
+  /** @nullable */
+  selfRating?: number | null;
+  /** @nullable */
+  testedLevel?: number | null;
+  /** @nullable */
+  testedAt?: string | null;
+  createdAt: string;
+}
+
+export interface PublicProfile {
+  profileId: number;
+  name: string;
+  educationLevel: string;
+  /** @nullable */
+  fieldOfStudy?: string | null;
+  /** @nullable */
+  workExperience?: string | null;
+  /** @nullable */
+  goals?: string | null;
+  assessmentCompleted: boolean;
+  /** @nullable */
+  score?: number | null;
+  /** @nullable */
+  analysis?: string | null;
+  topStrengths: string[];
+  areasToImprove: string[];
+  careerSuggestions: CareerSuggestion[];
+  progress: ProgressEntry[];
+  skills: UserSkill[];
+  createdAt: string;
+}
+
+export interface ProfileComment {
+  id: number;
+  profileId: number;
+  authorName: string;
+  content: string;
+  createdAt: string;
+}
+
+export interface ProfileCommentInput {
+  /** @minLength 1 */
+  content: string;
+}
+
+export interface ProgressUpdate {
+  careerTitle: string;
+  milestoneIndex: number;
+  phaseIndex: number;
+  completed: boolean;
+}
+
+export interface SkillInput {
+  /** @minLength 1 */
+  skillName: string;
+  /**
+     * @minimum 1
+     * @maximum 10
+     */
+  selfRating?: number;
+}
+
+export interface SkillTestQuestion {
+  index: number;
+  question: string;
+  options: string[];
+}
+
+export type SkillTestSubmissionAnswersItem = {
+  questionIndex: number;
+  answer: string;
+};
+
+export interface SkillTestSubmission {
+  answers: SkillTestSubmissionAnswersItem[];
+  questions: SkillTestQuestion[];
+}
+
+export interface SkillTestResult {
+  skillId: number;
+  skillName: string;
+  testedLevel: number;
+  summary: string;
+  advice: string[];
+}
+
+/**
+ * Opaque session token — `Bearer <sid>`.
+ */
+export type AuthorizationSessionHeaderParameter = string;
+
+export type BeginBrowserLoginParams = {
+returnTo?: string;
+};
+
+export type HandleBrowserLoginCallbackParams = {
+code?: string;
+state?: string;
+iss?: string;
+};
+
+export type GetRoadmapProgressParams = {
+career?: string;
+};
+
 export type GetCareerRoadmapParams = {
 /**
  * Target career title — if omitted, defaults to the top suggested career

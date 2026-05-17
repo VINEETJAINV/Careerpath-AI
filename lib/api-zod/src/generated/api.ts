@@ -9,6 +9,280 @@ import * as zod from 'zod';
 
 
 /**
+ * @summary Get the currently authenticated user
+ */
+export const GetCurrentAuthUserHeader = zod.object({
+  "Authorization": zod.string().optional().describe('Opaque session token — `Bearer <sid>`.')
+})
+
+export const GetCurrentAuthUserResponse = zod.object({
+  "user": zod.union([zod.object({
+  "id": zod.string(),
+  "email": zod.string().email().nullable(),
+  "firstName": zod.string().nullable(),
+  "lastName": zod.string().nullable(),
+  "profileImageUrl": zod.string().nullable()
+}),zod.null()])
+})
+
+
+/**
+ * @summary Start the browser OIDC login flow
+ */
+export const BeginBrowserLoginQueryParams = zod.object({
+  "returnTo": zod.coerce.string().optional()
+})
+
+
+/**
+ * @summary Complete the browser OIDC login flow
+ */
+export const HandleBrowserLoginCallbackQueryParams = zod.object({
+  "code": zod.coerce.string().optional(),
+  "state": zod.coerce.string().optional(),
+  "iss": zod.coerce.string().url().optional()
+})
+
+
+/**
+ * @summary Clear the session and begin OIDC logout
+ */
+export const LogoutBrowserSessionHeader = zod.object({
+  "Authorization": zod.string().optional().describe('Opaque session token — `Bearer <sid>`.')
+})
+
+
+/**
+ * @summary List all community members who have completed assessments
+ */
+export const GetCommunityMembersResponseItem = zod.object({
+  "profileId": zod.number(),
+  "name": zod.string(),
+  "topCareer": zod.string().nullable(),
+  "compatibilityScore": zod.number().nullable(),
+  "assessmentCompleted": zod.boolean(),
+  "createdAt": zod.coerce.date()
+})
+export const GetCommunityMembersResponse = zod.array(GetCommunityMembersResponseItem)
+
+
+/**
+ * @summary Get a public view of a profile with career suggestions and roadmap progress
+ */
+export const GetPublicProfileParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const GetPublicProfileResponse = zod.object({
+  "profileId": zod.number(),
+  "name": zod.string(),
+  "educationLevel": zod.string(),
+  "fieldOfStudy": zod.string().nullish(),
+  "workExperience": zod.string().nullish(),
+  "goals": zod.string().nullish(),
+  "assessmentCompleted": zod.boolean(),
+  "score": zod.number().nullish(),
+  "analysis": zod.string().nullish(),
+  "topStrengths": zod.array(zod.string()),
+  "areasToImprove": zod.array(zod.string()),
+  "careerSuggestions": zod.array(zod.object({
+  "id": zod.number(),
+  "profileId": zod.number(),
+  "careerTitle": zod.string(),
+  "compatibilityScore": zod.number(),
+  "description": zod.string(),
+  "pros": zod.array(zod.string()),
+  "cons": zod.array(zod.string()),
+  "requiredSkills": zod.array(zod.string()),
+  "salaryRange": zod.string(),
+  "timeToAchieve": zod.string(),
+  "createdAt": zod.coerce.date()
+})),
+  "progress": zod.array(zod.object({
+  "id": zod.number(),
+  "profileId": zod.number(),
+  "careerTitle": zod.string(),
+  "milestoneIndex": zod.number(),
+  "phaseIndex": zod.number(),
+  "completed": zod.boolean(),
+  "completedAt": zod.coerce.date().nullish()
+})),
+  "skills": zod.array(zod.object({
+  "id": zod.number(),
+  "profileId": zod.number(),
+  "skillName": zod.string(),
+  "selfRating": zod.number().nullish(),
+  "testedLevel": zod.number().nullish(),
+  "testedAt": zod.coerce.date().nullish(),
+  "createdAt": zod.coerce.date()
+})),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Get comments on a profile
+ */
+export const GetProfileCommentsParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const GetProfileCommentsResponseItem = zod.object({
+  "id": zod.number(),
+  "profileId": zod.number(),
+  "authorName": zod.string(),
+  "content": zod.string(),
+  "createdAt": zod.coerce.date()
+})
+export const GetProfileCommentsResponse = zod.array(GetProfileCommentsResponseItem)
+
+
+/**
+ * @summary Add a comment to a profile
+ */
+export const AddProfileCommentParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const AddProfileCommentHeader = zod.object({
+  "Authorization": zod.string().optional().describe('Opaque session token — `Bearer <sid>`.')
+})
+
+
+
+
+export const AddProfileCommentBody = zod.object({
+  "content": zod.string().min(1)
+})
+
+
+/**
+ * @summary Get roadmap progress for a profile
+ */
+export const GetRoadmapProgressParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const GetRoadmapProgressQueryParams = zod.object({
+  "career": zod.coerce.string().optional()
+})
+
+export const GetRoadmapProgressResponseItem = zod.object({
+  "id": zod.number(),
+  "profileId": zod.number(),
+  "careerTitle": zod.string(),
+  "milestoneIndex": zod.number(),
+  "phaseIndex": zod.number(),
+  "completed": zod.boolean(),
+  "completedAt": zod.coerce.date().nullish()
+})
+export const GetRoadmapProgressResponse = zod.array(GetRoadmapProgressResponseItem)
+
+
+/**
+ * @summary Toggle a roadmap milestone as complete or incomplete
+ */
+export const UpdateRoadmapProgressParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const UpdateRoadmapProgressHeader = zod.object({
+  "Authorization": zod.string().optional().describe('Opaque session token — `Bearer <sid>`.')
+})
+
+export const UpdateRoadmapProgressBody = zod.object({
+  "careerTitle": zod.string(),
+  "milestoneIndex": zod.number(),
+  "phaseIndex": zod.number(),
+  "completed": zod.boolean()
+})
+
+export const UpdateRoadmapProgressResponse = zod.object({
+  "id": zod.number(),
+  "profileId": zod.number(),
+  "careerTitle": zod.string(),
+  "milestoneIndex": zod.number(),
+  "phaseIndex": zod.number(),
+  "completed": zod.boolean(),
+  "completedAt": zod.coerce.date().nullish()
+})
+
+
+/**
+ * @summary Get all skills for a profile
+ */
+export const GetProfileSkillsParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const GetProfileSkillsResponseItem = zod.object({
+  "id": zod.number(),
+  "profileId": zod.number(),
+  "skillName": zod.string(),
+  "selfRating": zod.number().nullish(),
+  "testedLevel": zod.number().nullish(),
+  "testedAt": zod.coerce.date().nullish(),
+  "createdAt": zod.coerce.date()
+})
+export const GetProfileSkillsResponse = zod.array(GetProfileSkillsResponseItem)
+
+
+/**
+ * @summary Add or update a skill on a profile
+ */
+export const AddProfileSkillParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const AddProfileSkillHeader = zod.object({
+  "Authorization": zod.string().optional().describe('Opaque session token — `Bearer <sid>`.')
+})
+
+
+export const addProfileSkillBodySelfRatingMax = 10;
+
+
+
+export const AddProfileSkillBody = zod.object({
+  "skillName": zod.string().min(1),
+  "selfRating": zod.number().min(1).max(addProfileSkillBodySelfRatingMax).optional()
+})
+
+
+/**
+ * @summary Run an AI-generated skill test and return the assessed level with advice
+ */
+export const RunSkillTestParams = zod.object({
+  "id": zod.coerce.number(),
+  "skillId": zod.coerce.number()
+})
+
+export const RunSkillTestHeader = zod.object({
+  "Authorization": zod.string().optional().describe('Opaque session token — `Bearer <sid>`.')
+})
+
+export const RunSkillTestBody = zod.object({
+  "answers": zod.array(zod.object({
+  "questionIndex": zod.number(),
+  "answer": zod.string()
+})),
+  "questions": zod.array(zod.object({
+  "index": zod.number(),
+  "question": zod.string(),
+  "options": zod.array(zod.string())
+}))
+})
+
+export const RunSkillTestResponse = zod.object({
+  "skillId": zod.number(),
+  "skillName": zod.string(),
+  "testedLevel": zod.number(),
+  "summary": zod.string(),
+  "advice": zod.array(zod.string())
+})
+
+
+/**
  * @summary Health check
  */
 export const HealthCheckResponse = zod.object({

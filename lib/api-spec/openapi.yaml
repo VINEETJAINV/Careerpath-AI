@@ -9,6 +9,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: auth
+    description: Authentication endpoints
   - name: profiles
     description: User career profile operations
   - name: assessments
@@ -17,7 +19,295 @@ tags:
     description: Career suggestions and roadmap operations
   - name: openai
     description: OpenAI AI chat operations
+  - name: community
+    description: Community directory and social features
 paths:
+  /auth/user:
+    get:
+      tags: [auth]
+      operationId: getCurrentAuthUser
+      summary: Get the currently authenticated user
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationSessionHeader'
+        - $ref: '#/components/parameters/SessionCookie'
+      responses:
+        '200':
+          description: Auth status resolved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthUserEnvelope'
+  /login:
+    get:
+      tags: [auth]
+      operationId: beginBrowserLogin
+      summary: Start the browser OIDC login flow
+      parameters:
+        - name: returnTo
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '302':
+          description: Redirect to the OIDC authorization endpoint.
+  /callback:
+    get:
+      tags: [auth]
+      operationId: handleBrowserLoginCallback
+      summary: Complete the browser OIDC login flow
+      parameters:
+        - name: code
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: state
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: iss
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uri
+      responses:
+        '302':
+          description: Redirect on success or failure.
+  /logout:
+    get:
+      tags: [auth]
+      operationId: logoutBrowserSession
+      summary: Clear the session and begin OIDC logout
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationSessionHeader'
+        - $ref: '#/components/parameters/SessionCookie'
+      responses:
+        '302':
+          description: Redirect to the OIDC provider logout URL.
+
+  /community/members:
+    get:
+      operationId: getCommunityMembers
+      tags: [community]
+      summary: List all community members who have completed assessments
+      responses:
+        "200":
+          description: List of community members
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CommunityMember"
+
+  /profiles/{id}/public:
+    get:
+      operationId: getPublicProfile
+      tags: [community]
+      summary: Get a public view of a profile with career suggestions and roadmap progress
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Public profile data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicProfile"
+        "404":
+          description: Profile not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /profiles/{id}/comments:
+    get:
+      operationId: getProfileComments
+      tags: [community]
+      summary: Get comments on a profile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of comments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProfileComment"
+    post:
+      operationId: addProfileComment
+      tags: [community]
+      summary: Add a comment to a profile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - $ref: '#/components/parameters/AuthorizationSessionHeader'
+        - $ref: '#/components/parameters/SessionCookie'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProfileCommentInput"
+      responses:
+        "201":
+          description: Comment added
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProfileComment"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /profiles/{id}/progress:
+    get:
+      operationId: getRoadmapProgress
+      tags: [community]
+      summary: Get roadmap progress for a profile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: career
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Roadmap progress entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProgressEntry"
+    put:
+      operationId: updateRoadmapProgress
+      tags: [community]
+      summary: Toggle a roadmap milestone as complete or incomplete
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - $ref: '#/components/parameters/AuthorizationSessionHeader'
+        - $ref: '#/components/parameters/SessionCookie'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProgressUpdate"
+      responses:
+        "200":
+          description: Progress updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProgressEntry"
+
+  /profiles/{id}/skills:
+    get:
+      operationId: getProfileSkills
+      tags: [community]
+      summary: Get all skills for a profile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of skills
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/UserSkill"
+    post:
+      operationId: addProfileSkill
+      tags: [community]
+      summary: Add or update a skill on a profile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - $ref: '#/components/parameters/AuthorizationSessionHeader'
+        - $ref: '#/components/parameters/SessionCookie'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SkillInput"
+      responses:
+        "201":
+          description: Skill added
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserSkill"
+
+  /profiles/{id}/skills/{skillId}/test:
+    post:
+      operationId: runSkillTest
+      tags: [community]
+      summary: Run an AI-generated skill test and return the assessed level with advice
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: skillId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - $ref: '#/components/parameters/AuthorizationSessionHeader'
+        - $ref: '#/components/parameters/SessionCookie'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SkillTestSubmission"
+      responses:
+        "200":
+          description: Skill test result with advice
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SkillTestResult"
   /healthz:
     get:
       operationId: healthCheck
@@ -403,6 +693,21 @@ paths:
             text/event-stream: {}
 
 components:
+  parameters:
+    AuthorizationSessionHeader:
+      name: Authorization
+      in: header
+      required: false
+      description: Opaque session token — `Bearer <sid>`.
+      schema:
+        type: string
+    SessionCookie:
+      name: sid
+      in: cookie
+      required: false
+      description: Browser session cookie.
+      schema:
+        type: string
   schemas:
     HealthStatus:
       type: object
@@ -973,3 +1278,280 @@ components:
           type: string
       required:
         - error
+
+    AuthUser:
+      type: object
+      required: [id, email, firstName, lastName, profileImageUrl]
+      properties:
+        id:
+          type: string
+        email:
+          type: [string, 'null']
+          format: email
+        firstName:
+          type: [string, 'null']
+        lastName:
+          type: [string, 'null']
+        profileImageUrl:
+          type: [string, 'null']
+
+    AuthUserEnvelope:
+      type: object
+      required: [user]
+      properties:
+        user:
+          oneOf:
+            - $ref: '#/components/schemas/AuthUser'
+            - type: 'null'
+
+    CommunityMember:
+      type: object
+      properties:
+        profileId:
+          type: integer
+        name:
+          type: string
+        topCareer:
+          type: ["string", "null"]
+        compatibilityScore:
+          type: ["integer", "null"]
+        assessmentCompleted:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - profileId
+        - name
+        - topCareer
+        - compatibilityScore
+        - assessmentCompleted
+        - createdAt
+
+    PublicProfile:
+      type: object
+      properties:
+        profileId:
+          type: integer
+        name:
+          type: string
+        educationLevel:
+          type: string
+        fieldOfStudy:
+          type: ["string", "null"]
+        workExperience:
+          type: ["string", "null"]
+        goals:
+          type: ["string", "null"]
+        assessmentCompleted:
+          type: boolean
+        score:
+          type: ["integer", "null"]
+        analysis:
+          type: ["string", "null"]
+        topStrengths:
+          type: array
+          items:
+            type: string
+        areasToImprove:
+          type: array
+          items:
+            type: string
+        careerSuggestions:
+          type: array
+          items:
+            $ref: "#/components/schemas/CareerSuggestion"
+        progress:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProgressEntry"
+        skills:
+          type: array
+          items:
+            $ref: "#/components/schemas/UserSkill"
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - profileId
+        - name
+        - educationLevel
+        - assessmentCompleted
+        - topStrengths
+        - areasToImprove
+        - careerSuggestions
+        - progress
+        - skills
+        - createdAt
+
+    ProfileComment:
+      type: object
+      properties:
+        id:
+          type: integer
+        profileId:
+          type: integer
+        authorName:
+          type: string
+        content:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - profileId
+        - authorName
+        - content
+        - createdAt
+
+    ProfileCommentInput:
+      type: object
+      properties:
+        content:
+          type: string
+          minLength: 1
+      required:
+        - content
+
+    ProgressEntry:
+      type: object
+      properties:
+        id:
+          type: integer
+        profileId:
+          type: integer
+        careerTitle:
+          type: string
+        milestoneIndex:
+          type: integer
+        phaseIndex:
+          type: integer
+        completed:
+          type: boolean
+        completedAt:
+          type: ["string", "null"]
+          format: date-time
+      required:
+        - id
+        - profileId
+        - careerTitle
+        - milestoneIndex
+        - phaseIndex
+        - completed
+
+    ProgressUpdate:
+      type: object
+      properties:
+        careerTitle:
+          type: string
+        milestoneIndex:
+          type: integer
+        phaseIndex:
+          type: integer
+        completed:
+          type: boolean
+      required:
+        - careerTitle
+        - milestoneIndex
+        - phaseIndex
+        - completed
+
+    UserSkill:
+      type: object
+      properties:
+        id:
+          type: integer
+        profileId:
+          type: integer
+        skillName:
+          type: string
+        selfRating:
+          type: ["integer", "null"]
+        testedLevel:
+          type: ["integer", "null"]
+        testedAt:
+          type: ["string", "null"]
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - profileId
+        - skillName
+        - createdAt
+
+    SkillInput:
+      type: object
+      properties:
+        skillName:
+          type: string
+          minLength: 1
+        selfRating:
+          type: integer
+          minimum: 1
+          maximum: 10
+      required:
+        - skillName
+
+    SkillTestQuestion:
+      type: object
+      properties:
+        index:
+          type: integer
+        question:
+          type: string
+        options:
+          type: array
+          items:
+            type: string
+      required:
+        - index
+        - question
+        - options
+
+    SkillTestSubmission:
+      type: object
+      properties:
+        answers:
+          type: array
+          items:
+            type: object
+            properties:
+              questionIndex:
+                type: integer
+              answer:
+                type: string
+            required:
+              - questionIndex
+              - answer
+        questions:
+          type: array
+          items:
+            $ref: "#/components/schemas/SkillTestQuestion"
+      required:
+        - answers
+        - questions
+
+    SkillTestResult:
+      type: object
+      properties:
+        skillId:
+          type: integer
+        skillName:
+          type: string
+        testedLevel:
+          type: integer
+        summary:
+          type: string
+        advice:
+          type: array
+          items:
+            type: string
+      required:
+        - skillId
+        - skillName
+        - testedLevel
+        - summary
+        - advice

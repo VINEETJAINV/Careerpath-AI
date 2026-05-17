@@ -44,6 +44,7 @@ router.post("/profiles", async (req, res) => {
       skills: body.data.skills ?? null,
       interests: body.data.interests ?? null,
       goals: body.data.goals ?? null,
+      userId: req.isAuthenticated() ? req.user.id : null,
     }).returning();
     res.status(201).json(profile);
   } catch (err) {

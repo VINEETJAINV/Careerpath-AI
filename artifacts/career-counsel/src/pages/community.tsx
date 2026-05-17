@@ -1,393 +1,155 @@
-import { useSearch } from "wouter";
+import { Link } from "wouter";
 import { AppLayout } from "@/components/layout/AppLayout";
-import {
-  useGetCommunityInsights,
-  getGetCommunityInsightsQueryKey,
-} from "@workspace/api-client-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { useGetCommunityMembers, getGetCommunityMembersQueryKey } from "@workspace/api-client-react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Users,
-  ClipboardCheck,
-  TrendingUp,
-  Star,
-  AlertTriangle,
-  BarChart3,
-  CheckCircle2,
-  Trophy,
-  Target,
-} from "lucide-react";
-
-function AnswerBar({ label, count, total, isMyAnswer }: { label: string; count: number; total: number; isMyAnswer: boolean }) {
-  const pct = total > 0 ? Math.round((count / total) * 100) : 0;
-  return (
-    <div className={`space-y-1 rounded-lg px-3 py-2 transition-colors ${isMyAnswer ? "bg-primary/5 ring-1 ring-primary/30" : ""}`}>
-      <div className="flex justify-between items-center text-sm">
-        <span className="flex items-center gap-1.5 text-foreground/80">
-          {isMyAnswer && <span className="inline-block w-2 h-2 rounded-full bg-primary flex-shrink-0" />}
-          {label}
-        </span>
-        <span className="font-semibold text-xs text-muted-foreground whitespace-nowrap ml-2">{pct}% ({count})</span>
-      </div>
-      <div className="h-2 bg-muted rounded-full overflow-hidden">
-        <div
-          className={`h-full rounded-full transition-all ${isMyAnswer ? "bg-primary" : "bg-muted-foreground/30"}`}
-          style={{ width: `${pct}%` }}
-        />
-      </div>
-    </div>
-  );
-}
+import { Input } from "@/components/ui/input";
+import { Users, Search, CheckCircle2, Clock, TrendingUp, ChevronRight } from "lucide-react";
+import { useState } from "react";
 
 export default function Community() {
-  const search = useSearch();
-  const params = new URLSearchParams(search);
-  const profileId = params.get("profileId") ? Number(params.get("profileId")) : undefined;
+  const [search, setSearch] = useState("");
 
-  const { data, isLoading } = useGetCommunityInsights(
-    profileId !== undefined ? { profileId } : {},
-    { query: { queryKey: getGetCommunityInsightsQueryKey(profileId !== undefined ? { profileId } : {}) } }
+  const { data: members, isLoading } = useGetCommunityMembers({
+    query: { queryKey: getGetCommunityMembersQueryKey() },
+  });
+
+  const filtered = (members ?? []).filter(
+    (m) =>
+      m.name.toLowerCase().includes(search.toLowerCase()) ||
+      (m.topCareer ?? "").toLowerCase().includes(search.toLowerCase())
   );
 
-  const statCards = [
-    { icon: Users, label: "Community Members", value: data?.totalMembers ?? "—" },
-    { icon: ClipboardCheck, label: "Assessments Completed", value: data?.assessmentsCompleted ?? "—" },
-    { icon: BarChart3, label: "Community Avg Score", value: data && data.assessmentsCompleted > 0 ? `${data.avgScore}/100` : "—" },
-  ];
+  const completed = (members ?? []).filter((m) => m.assessmentCompleted).length;
 
   return (
     <AppLayout>
-      <div className="container mx-auto max-w-6xl py-12 px-4 space-y-12">
-
+      <div className="container mx-auto max-w-4xl py-12 px-4 space-y-10">
         {/* Header */}
-        <div className="text-center space-y-3 max-w-3xl mx-auto">
-          <h1 className="text-4xl font-display font-bold">Community Insights</h1>
-          <p className="text-xl text-muted-foreground">
-            See how your answers and scores compare with everyone who has taken the assessment.
+        <div className="text-center space-y-3">
+          <h1 className="text-4xl font-display font-bold tracking-tight">Community</h1>
+          <p className="text-muted-foreground text-lg max-w-xl mx-auto">
+            See who else is on their career journey. Click anyone to view their full profile, roadmap, skills, and progress.
           </p>
-          {profileId && (
-            <Badge variant="secondary" className="text-sm px-4 py-1">
-              Showing your answers highlighted
-            </Badge>
+        </div>
+
+        {/* Stats bar */}
+        <div className="grid grid-cols-3 gap-4">
+          {isLoading ? (
+            [1, 2, 3].map((i) => <Skeleton key={i} className="h-20 w-full rounded-xl" />)
+          ) : (
+            <>
+              <Card className="text-center py-4">
+                <CardContent className="p-0">
+                  <p className="text-3xl font-display font-bold text-primary">{members?.length ?? 0}</p>
+                  <p className="text-xs text-muted-foreground mt-1">Members</p>
+                </CardContent>
+              </Card>
+              <Card className="text-center py-4">
+                <CardContent className="p-0">
+                  <p className="text-3xl font-display font-bold text-green-600">{completed}</p>
+                  <p className="text-xs text-muted-foreground mt-1">Assessments Done</p>
+                </CardContent>
+              </Card>
+              <Card className="text-center py-4">
+                <CardContent className="p-0">
+                  <p className="text-3xl font-display font-bold text-amber-500">
+                    {(members ?? []).filter((m) => m.topCareer).length}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">Career Paths Found</p>
+                </CardContent>
+              </Card>
+            </>
           )}
         </div>
 
-        {/* Hero Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {statCards.map(({ icon: Icon, label, value }) => (
-            <Card key={label} className="border-2 text-center">
-              <CardContent className="pt-8 pb-6">
-                <Icon className="h-8 w-8 text-primary mx-auto mb-3" />
-                {isLoading ? (
-                  <Skeleton className="h-9 w-24 mx-auto mb-2" />
-                ) : (
-                  <p className="text-4xl font-display font-bold">{value}</p>
-                )}
-                <p className="text-sm text-muted-foreground mt-1">{label}</p>
-              </CardContent>
-            </Card>
-          ))}
+        {/* Search */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            className="pl-9"
+            placeholder="Search by name or career path..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
         </div>
 
-        {/* Your Score vs Community */}
-        {profileId && (
-          <Card className={`border-2 ${data?.myScore !== undefined && data.myScore !== null ? "border-primary/40 bg-primary/5" : ""}`}>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Target className="h-5 w-5 text-primary" />
-                Your Score vs the Community
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {isLoading ? (
-                <div className="flex gap-12">
-                  <Skeleton className="h-20 w-32" />
-                  <Skeleton className="h-20 w-32" />
-                </div>
-              ) : (
-                <div className="flex flex-wrap gap-12 items-end">
-                  <div>
-                    <p className="text-sm text-muted-foreground mb-1">Your Score</p>
-                    <p className={`text-6xl font-display font-bold ${
-                      (data?.myScore ?? 0) >= 70 ? "text-green-600"
-                      : (data?.myScore ?? 0) >= 45 ? "text-amber-600"
-                      : "text-red-600"
-                    }`}>
-                      {data?.myScore !== null && data?.myScore !== undefined ? data.myScore : "—"}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground mb-1">Community Average</p>
-                    <p className="text-6xl font-display font-bold text-muted-foreground">{data?.avgScore ?? "—"}</p>
-                  </div>
-                  {data?.myScore !== null && data?.myScore !== undefined && data?.avgScore !== undefined && (
-                    <div className="pb-2">
-                      <Badge
-                        className={`text-base px-4 py-1.5 ${
-                          data.myScore > data.avgScore
-                            ? "bg-green-100 text-green-700 border-green-200"
-                            : data.myScore === data.avgScore
-                            ? "bg-amber-100 text-amber-700 border-amber-200"
-                            : "bg-red-100 text-red-600 border-red-200"
-                        }`}
-                        variant="outline"
-                      >
-                        {data.myScore > data.avgScore
-                          ? `${data.myScore - data.avgScore} points above average`
-                          : data.myScore === data.avgScore
-                          ? "Right at the average"
-                          : `${data.avgScore - data.myScore} points below average`}
-                      </Badge>
-                    </div>
-                  )}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Score Distribution */}
-        <Card className="border">
-          <CardHeader className="bg-muted/30 border-b">
-            <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="h-5 w-5 text-primary" />
-              Score Distribution
-            </CardTitle>
-            <CardDescription>How assessment scores are spread across the community</CardDescription>
-          </CardHeader>
-          <CardContent className="pt-6">
-            {isLoading ? (
-              <div className="space-y-3">
-                {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-10 w-full" />)}
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {(data?.scoreDistribution ?? []).map((bucket) => {
-                  const total = Math.max(1, data?.assessmentsCompleted ?? 1);
-                  const pct = Math.round((bucket.count / total) * 100);
-                  const isMyBucket =
-                    data?.myScore !== null && data?.myScore !== undefined &&
-                    ((bucket.range === "0–25" && data.myScore <= 25) ||
-                      (bucket.range === "26–50" && data.myScore > 25 && data.myScore <= 50) ||
-                      (bucket.range === "51–75" && data.myScore > 50 && data.myScore <= 75) ||
-                      (bucket.range === "76–100" && data.myScore > 75));
-                  return (
-                    <div key={bucket.range} className={`space-y-1 rounded-lg px-3 py-2 ${isMyBucket ? "bg-primary/5 ring-1 ring-primary/30" : ""}`}>
-                      <div className="flex justify-between text-sm">
-                        <span className="flex items-center gap-1.5 font-medium">
-                          {isMyBucket && <span className="inline-block w-2 h-2 rounded-full bg-primary" />}
-                          Score {bucket.range}
-                          {isMyBucket && <Badge variant="outline" className="ml-2 text-xs border-primary/40 text-primary">You</Badge>}
-                        </span>
-                        <span className="text-muted-foreground">{pct}% · {bucket.count} {bucket.count === 1 ? "person" : "people"}</span>
-                      </div>
-                      <div className="h-3 bg-muted rounded-full overflow-hidden">
-                        <div
-                          className={`h-full rounded-full ${isMyBucket ? "bg-primary" : "bg-muted-foreground/40"}`}
-                          style={{ width: `${pct}%` }}
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Most Popular Paths */}
-        <Card className="border">
-          <CardHeader className="bg-muted/30 border-b">
-            <CardTitle className="flex items-center gap-2">
-              <Trophy className="h-5 w-5 text-primary" />
-              Most Recommended Career Paths
-            </CardTitle>
-            <CardDescription>What the AI suggested most often across the community</CardDescription>
-          </CardHeader>
-          <CardContent className="pt-6 space-y-3">
-            {isLoading ? (
-              <div className="space-y-3">{[1,2,3,4,5].map(i => <Skeleton key={i} className="h-12 w-full" />)}</div>
-            ) : (data?.topCareers ?? []).length === 0 ? (
-              <p className="text-muted-foreground italic text-sm">No career data yet — be the first to complete an assessment.</p>
-            ) : (
-              (data?.topCareers ?? []).map((career, i) => (
-                <div key={career.careerTitle} className="flex items-center gap-4 py-2 border-b last:border-0">
-                  <span className={`text-2xl font-display font-bold w-8 text-center ${i === 0 ? "text-amber-500" : i === 1 ? "text-slate-400" : i === 2 ? "text-amber-700" : "text-muted-foreground"}`}>
-                    {i + 1}
-                  </span>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold truncate">{career.careerTitle}</p>
-                    <p className="text-xs text-muted-foreground">Avg match score: {career.avgCompatibilityScore}%</p>
-                  </div>
-                  <Badge variant="secondary" className="shrink-0">
-                    {career.count} {career.count === 1 ? "person" : "people"}
-                  </Badge>
-                </div>
-              ))
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Community Strengths + Areas to Improve */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card className="border border-green-200 bg-green-50/20">
-            <CardHeader className="border-b border-green-100 pb-4">
-              <CardTitle className="flex items-center gap-2 text-green-700">
-                <Star className="h-5 w-5" /> Top Community Strengths
-              </CardTitle>
-              <CardDescription>Most common strengths identified by the AI across all assessments</CardDescription>
-            </CardHeader>
-            <CardContent className="pt-5 space-y-2">
-              {isLoading ? (
-                <div className="space-y-2">{[1,2,3,4,5].map(i => <Skeleton key={i} className="h-8 w-full" />)}</div>
-              ) : (data?.topStrengths ?? []).length === 0 ? (
-                <p className="text-muted-foreground italic text-sm">No data yet.</p>
-              ) : (
-                (data?.topStrengths ?? []).map((item) => (
-                  <div key={item.label} className="flex items-center gap-2 text-sm">
-                    <CheckCircle2 className="h-4 w-4 text-green-600 flex-shrink-0" />
-                    <span className="flex-1">{item.label}</span>
-                    <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs">{item.count}</Badge>
-                  </div>
-                ))
-              )}
-            </CardContent>
-          </Card>
-
-          <Card className="border border-red-200 bg-red-50/20">
-            <CardHeader className="border-b border-red-100 pb-4">
-              <CardTitle className="flex items-center gap-2 text-red-700">
-                <AlertTriangle className="h-5 w-5" /> Common Areas to Improve
-              </CardTitle>
-              <CardDescription>What the community most needs to work on</CardDescription>
-            </CardHeader>
-            <CardContent className="pt-5 space-y-2">
-              {isLoading ? (
-                <div className="space-y-2">{[1,2,3,4,5].map(i => <Skeleton key={i} className="h-8 w-full" />)}</div>
-              ) : (data?.topAreasToImprove ?? []).length === 0 ? (
-                <p className="text-muted-foreground italic text-sm">No data yet.</p>
-              ) : (
-                (data?.topAreasToImprove ?? []).map((item) => (
-                  <div key={item.label} className="flex items-center gap-2 text-sm">
-                    <AlertTriangle className="h-4 w-4 text-red-500 flex-shrink-0" />
-                    <span className="flex-1">{item.label}</span>
-                    <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 text-xs">{item.count}</Badge>
-                  </div>
-                ))
-              )}
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Question Breakdowns */}
-        {((data?.questionBreakdowns ?? []).length > 0 || isLoading) && (
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-2xl font-display font-bold">How Everyone Answered</h2>
-              <p className="text-muted-foreground mt-1">
-                Answer distributions for every question — {profileId ? "your choice is highlighted in blue" : "complete the assessment to see your answers highlighted"}.
-              </p>
-            </div>
-            {isLoading ? (
-              <div className="space-y-6">
-                {[1, 2, 3].map(i => <Skeleton key={i} className="h-48 w-full" />)}
-              </div>
-            ) : (
-              (data?.questionBreakdowns ?? []).map((q, qi) => {
-                const total = q.answers.reduce((sum, a) => sum + a.count, 0);
-                const myAnswerParts = q.myAnswer
-                  ? q.questionType === "multiple_select"
-                    ? q.myAnswer.split("|").map(s => s.trim())
-                    : [q.myAnswer]
-                  : [];
-                return (
-                  <Card key={qi} className="border">
-                    <CardHeader className="bg-muted/20 border-b pb-4">
-                      <div className="flex items-start gap-3">
-                        <span className="text-lg font-bold text-primary/60 font-display shrink-0">Q{qi + 1}</span>
-                        <div>
-                          <CardTitle className="text-base font-semibold leading-snug">{q.questionText}</CardTitle>
-                          <div className="flex items-center gap-2 mt-1">
-                            <Badge variant="outline" className="text-xs capitalize">{q.questionType.replace("_", " ")}</Badge>
-                            <span className="text-xs text-muted-foreground">{total} {total === 1 ? "response" : "responses"}</span>
-                          </div>
-                        </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="pt-4 space-y-2">
-                      {q.answers.map((a) => (
-                        <AnswerBar
-                          key={a.label}
-                          label={a.label}
-                          count={a.count}
-                          total={total}
-                          isMyAnswer={myAnswerParts.includes(a.label)}
-                        />
-                      ))}
-                    </CardContent>
-                  </Card>
-                );
-              })
-            )}
+        {/* Member list */}
+        {isLoading ? (
+          <div className="space-y-3">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <Skeleton key={i} className="h-20 w-full rounded-xl" />
+            ))}
           </div>
-        )}
-
-        {/* Open-text responses */}
-        {((data?.textResponses ?? []).length > 0 || isLoading) && (
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-2xl font-display font-bold">What People Are Saying</h2>
-              <p className="text-muted-foreground mt-1">
-                Real, unfiltered answers to the open question — in their own words.
-              </p>
-            </div>
-            {isLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {[1,2,3,4].map(i => <Skeleton key={i} className="h-36 w-full" />)}
-              </div>
-            ) : (
-              (data?.textResponses ?? []).map((group) => (
-                <div key={group.questionText} className="space-y-4">
-                  <h3 className="text-base font-semibold text-muted-foreground italic">
-                    "{group.questionText}"
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {group.responses.map((r, i) => (
-                      <Card key={i} className="border bg-muted/20">
-                        <CardContent className="pt-5 pb-4">
-                          <p className="text-sm leading-relaxed text-foreground/90 mb-3">
-                            "{r.text}"
-                          </p>
-                          <div className="flex items-center gap-2">
-                            <div className="h-6 w-6 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary">
-                              {r.displayName[0]?.toUpperCase()}
-                            </div>
-                            <span className="text-xs font-medium text-muted-foreground">{r.displayName}</span>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        )}
-
-        {/* Empty state */}
-        {!isLoading && (data?.assessmentsCompleted ?? 0) === 0 && (
+        ) : filtered.length === 0 ? (
           <Card className="border-dashed border-2 text-center py-16">
             <CardContent>
               <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-xl font-display font-bold mb-2">No community data yet</h3>
-              <p className="text-muted-foreground max-w-md mx-auto">
-                Be the first to complete the assessment and kick off the community insights. Once a few people have finished, patterns will start to emerge here.
+              <p className="text-lg font-semibold">
+                {search ? "No members match your search" : "No members yet"}
+              </p>
+              <p className="text-muted-foreground mt-2">
+                {search ? "Try a different name or career." : "Be the first — complete your assessment!"}
               </p>
             </CardContent>
           </Card>
+        ) : (
+          <div className="space-y-3">
+            {filtered.map((member) => (
+              <Link key={member.profileId} href={`/community/profile/${member.profileId}`}>
+                <Card className="border hover:border-primary/50 hover:shadow-md transition-all cursor-pointer group">
+                  <CardContent className="p-5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        {/* Avatar initial */}
+                        <div className="h-11 w-11 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-lg flex-shrink-0">
+                          {member.name[0]?.toUpperCase()}
+                        </div>
+                        <div>
+                          <p className="font-semibold text-base group-hover:text-primary transition-colors">
+                            {member.name}
+                          </p>
+                          <div className="flex items-center gap-2 mt-1">
+                            {member.assessmentCompleted ? (
+                              <span className="flex items-center gap-1 text-xs text-green-600">
+                                <CheckCircle2 className="h-3 w-3" /> Assessment complete
+                              </span>
+                            ) : (
+                              <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                                <Clock className="h-3 w-3" /> Assessment pending
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        {member.topCareer && (
+                          <div className="text-right hidden sm:block">
+                            <p className="text-xs text-muted-foreground">Top match</p>
+                            <Badge variant="secondary" className="mt-0.5 font-medium max-w-[180px] truncate">
+                              {member.topCareer}
+                            </Badge>
+                            {member.compatibilityScore !== null && (
+                              <p className="text-xs text-green-600 font-semibold mt-0.5 flex items-center justify-end gap-1">
+                                <TrendingUp className="h-3 w-3" />{member.compatibilityScore}%
+                              </p>
+                            )}
+                          </div>
+                        )}
+                        <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
+          </div>
         )}
 
+        <p className="text-center text-sm text-muted-foreground">
+          Joined {new Date().getFullYear()} · Profiles are public by default
+        </p>
       </div>
     </AppLayout>
   );

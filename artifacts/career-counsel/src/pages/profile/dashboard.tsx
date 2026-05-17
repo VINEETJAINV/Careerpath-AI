@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { Target, Map as MapIcon, BrainCircuit, ArrowRight, Play, Users } from "lucide-react";
+import { Target, Map as MapIcon, BrainCircuit, ArrowRight, Play, Users, Zap } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export default function ProfileDashboard() {
@@ -153,10 +153,19 @@ export default function ProfileDashboard() {
                   <Button
                     variant="outline"
                     className="w-full justify-between"
-                    onClick={() => setLocation(`/community?profileId=${id}`)}
+                    onClick={() => setLocation(`/profile/${id}/skills`)}
+                    data-testid="btn-skills"
+                  >
+                    <span className="flex items-center gap-2"><Zap className="h-4 w-4" />Skill Tracker</span>
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="w-full justify-between"
+                    onClick={() => setLocation(`/community`)}
                     data-testid="btn-community"
                   >
-                    <span className="flex items-center gap-2"><Users className="h-4 w-4" />Community Insights</span>
+                    <span className="flex items-center gap-2"><Users className="h-4 w-4" />Community</span>
                     <ArrowRight className="h-4 w-4" />
                   </Button>
                 </>
