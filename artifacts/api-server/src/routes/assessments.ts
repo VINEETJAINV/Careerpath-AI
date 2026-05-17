@@ -19,49 +19,51 @@ const router = Router();
 
 const ASSESSMENT_QUESTIONS = [
   {
-    questionText: "How do you prefer to spend a typical workday?",
+    questionText: "When you imagine yourself doing fulfilling work, what does it look like?",
     questionType: "multiple_choice" as const,
     options: JSON.stringify([
-      "Solving complex technical problems",
-      "Interacting with people and building relationships",
-      "Creating and designing new ideas",
-      "Organizing and managing processes",
-      "Researching and analyzing data",
+      "Solving technical or intellectual problems",
+      "Connecting with, helping, or teaching people",
+      "Creating — art, music, writing, design, or performance",
+      "Building something of my own (a business, product, or venture)",
+      "Researching, studying, and advancing knowledge",
+      "Working hands-on to build, repair, or craft things",
     ]),
     orderIndex: 0,
   },
   {
-    questionText: "Rate your comfort with working in high-pressure, fast-paced environments (1 = very uncomfortable, 10 = thrive in it)",
+    questionText: "Rate your comfort with financial risk and uncertainty (1 = I need a stable income, 10 = I can handle unpredictable or no income for extended periods)",
     questionType: "scale" as const,
     options: null,
     orderIndex: 1,
   },
   {
-    questionText: "Which types of impact do you want your work to have? (Select all that apply)",
+    questionText: "What kinds of impact do you want your work to have? (Select all that apply)",
     questionType: "multiple_select" as const,
     options: JSON.stringify([
       "Help people directly (healthcare, education, social work)",
       "Build technology that improves lives",
-      "Create art, culture, or media",
-      "Drive business growth and wealth creation",
+      "Create art, culture, or meaningful experiences",
+      "Drive business growth or create economic value",
       "Advance scientific or academic knowledge",
       "Protect the environment and natural world",
+      "Entertain, inspire, or move people emotionally",
     ]),
     orderIndex: 2,
   },
   {
-    questionText: "How do you handle ambiguity and uncertain situations?",
+    questionText: "How do you feel about working within structures set by others?",
     questionType: "multiple_choice" as const,
     options: JSON.stringify([
-      "I thrive in it — I create structure from chaos",
-      "I cope reasonably well but prefer some clarity",
-      "I prefer clear guidelines but can handle some ambiguity",
-      "I work best with clear, well-defined tasks",
+      "I thrive with clear structure — I want to focus, not manage systems",
+      "I'm fine with structure as long as I have autonomy in my role",
+      "I prefer to create the structure myself rather than follow it",
+      "I actively resist external structure — I need to work on my own terms",
     ]),
     orderIndex: 3,
   },
   {
-    questionText: "Rate your self-discipline and ability to work independently without supervision (1 = need lots of guidance, 10 = completely self-driven)",
+    questionText: "Rate your self-discipline and ability to drive your own work without external accountability (1 = I need supervision and deadlines, 10 = fully self-directed)",
     questionType: "scale" as const,
     options: null,
     orderIndex: 4,
@@ -75,46 +77,48 @@ const ASSESSMENT_QUESTIONS = [
       "Creative and innovative thinking",
       "Leadership and influencing others",
       "Attention to detail and precision",
-      "Writing and verbal communication",
+      "Writing, storytelling, or verbal communication",
       "Building and fixing things (hands-on)",
-      "Numbers, data and financial analysis",
+      "Numbers, data, and financial analysis",
+      "Performing, presenting, or captivating an audience",
     ]),
     orderIndex: 5,
   },
   {
-    questionText: "How important is financial reward compared to job satisfaction and purpose?",
+    questionText: "What does success mean to you?",
     questionType: "multiple_choice" as const,
     options: JSON.stringify([
-      "Financial reward is my top priority",
-      "Both are equally important",
-      "Job satisfaction and purpose matter more",
-      "Purpose and impact are what drive me, money is secondary",
+      "Financial independence — building wealth and long-term security",
+      "Complete freedom — controlling my own time and direction",
+      "Recognition — being known and respected in my field",
+      "Mastery — reaching the highest level in a skill or discipline",
+      "Impact — making a real difference to people or the world",
+      "Legacy — building something that outlasts me",
     ]),
     orderIndex: 6,
   },
   {
-    questionText: "Which work environments appeal to you? (Select all that apply)",
+    questionText: "Which of these paths appeal to you? (Select all that apply)",
     questionType: "multiple_select" as const,
     options: JSON.stringify([
-      "Remote or work-from-home",
-      "Office-based with a team",
-      "Outdoors or field-based",
-      "Travelling and meeting clients",
-      "Lab or research environment",
-      "Hospital or healthcare setting",
-      "Creative studio or workshop",
-      "Startup or entrepreneurial setting",
+      "Employed professional with a salary and career ladder",
+      "Freelancer or independent contractor",
+      "Entrepreneur — starting or running my own business",
+      "Artist, performer, or creative professional",
+      "Academic, researcher, or scientist",
+      "Skilled tradesperson or craftsperson",
+      "Social enterprise, NGO, charity, or public sector",
     ]),
     orderIndex: 7,
   },
   {
-    questionText: "Rate your willingness to invest in years of further education or training for your career (1 = minimal further study, 10 = willing to study for many years)",
+    questionText: "Rate your willingness to invest years of further education or training to reach your goal (1 = I want to start now with what I have, 10 = willing to study or train for many years)",
     questionType: "scale" as const,
     options: null,
     orderIndex: 8,
   },
   {
-    questionText: "Describe in your own words: what does your ideal career look like in 5 years?",
+    questionText: "In your own words — what does your ideal path look like in 5 years, and what are you most worried about getting wrong?",
     questionType: "text" as const,
     options: null,
     orderIndex: 9,
@@ -235,7 +239,7 @@ router.post("/assessments/:id/submit", async (req, res) => {
       messages: [
         {
           role: "system",
-          content: `You are a brutally honest career counsellor AI. You do NOT sugarcoat. You give both the positives AND the negatives with equal weight. You spare nobody. Your job is to help people understand their true strengths and weaknesses so they can make informed career decisions. You always respond in valid JSON format only.`,
+          content: `You are a brutally honest career counsellor AI. You do NOT sugarcoat. You give both the positives AND the negatives with equal weight. You spare nobody. Your job is to help people understand their true strengths and weaknesses so they can make informed career decisions. You always respond in valid JSON format only. You consider ALL types of paths — traditional employment, freelancing, entrepreneurship, creative/artistic careers, academia, skilled trades, social enterprise, and portfolio careers. Never default to conventional "safe" jobs if the person's profile points elsewhere.`,
         },
         {
           role: "user",
@@ -248,10 +252,10 @@ ${qaText}
 
 Respond ONLY with a valid JSON object in this exact structure:
 {
-  "score": <integer 1-100 representing overall career readiness/clarity score>,
-  "analysis": "<3-4 paragraphs of honest, direct analysis of this person's career situation — include strengths AND weaknesses equally. Be frank about gaps and blind spots.>",
-  "topStrengths": ["<strength 1>", "<strength 2>", "<strength 3>"],
-  "areasToImprove": ["<weakness/gap 1>", "<weakness/gap 2>", "<weakness/gap 3>"],
+  "score": <integer 1-100 representing overall career clarity and readiness score>,
+  "analysis": "<3-4 paragraphs of honest, direct analysis — include genuine strengths AND real weaknesses equally. Call out blind spots. If they're not suited to their stated goal, say so clearly.>",
+  "topStrengths": ["<genuine strength 1>", "<genuine strength 2>", "<genuine strength 3>"],
+  "areasToImprove": ["<real weakness/gap 1>", "<real weakness/gap 2>", "<real weakness/gap 3>"],
   "skillAnalysis": {
     "existingSkills": ["<skill they already have 1>", "<skill they already have 2>", "<skill they already have 3>"],
     "skillGaps": ["<critical gap 1>", "<critical gap 2>", "<critical gap 3>"],
@@ -259,19 +263,19 @@ Respond ONLY with a valid JSON object in this exact structure:
   },
   "careerSuggestions": [
     {
-      "careerTitle": "<career name>",
+      "careerTitle": "<path name — can be a job title, creative career, business type, academic path, trade, etc.>",
       "compatibilityScore": <integer 0-100>,
-      "description": "<2-3 sentence description of this career and why it fits or partially fits>",
+      "description": "<2-3 sentences on what this path involves and why it fits or partially fits this person>",
       "pros": ["<genuine pro 1>", "<genuine pro 2>", "<genuine pro 3>"],
-      "cons": ["<real con 1>", "<real con 2 — be honest about challenges>", "<real con 3>"],
+      "cons": ["<honest con 1 — do not soften>", "<honest con 2>", "<honest con 3>"],
       "requiredSkills": ["<skill 1>", "<skill 2>", "<skill 3>", "<skill 4>"],
-      "salaryRange": "<realistic salary range in GBP per year>",
-      "timeToAchieve": "<realistic time estimate to be job-ready>"
+      "salaryRange": "<realistic earning range — for freelancers/entrepreneurs say 'Variable £X–Y'; for creatives be honest about typical earnings; for employees give a salary band>",
+      "timeToAchieve": "<realistic time to be genuinely established on this path, not just entry-level>"
     }
   ]
 }
 
-Provide exactly 4-5 career suggestions ordered from HIGHEST to LOWEST compatibility score. Be brutally honest about the cons — if something is hard, say so.`,
+Provide exactly 4-5 suggestions ordered from HIGHEST to LOWEST compatibility. Include non-traditional paths (freelancing, entrepreneurship, creative careers, trades, academia) wherever they genuinely fit the person — do not default to conventional employment if it is not the best match. Be brutally honest about the cons.`,
         },
       ],
     });

@@ -28,6 +28,8 @@ import type {
   AssessmentWithQuestions,
   CareerRoadmap,
   CareerSuggestion,
+  CommunityInsights,
+  GetCommunityInsightsParams,
   HealthStatus,
   OpenaiConversation,
   OpenaiConversationInput,
@@ -790,6 +792,90 @@ export function useGetCareerRoadmap<TData = Awaited<ReturnType<typeof getCareerR
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getGetCareerRoadmapQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getGetCommunityInsightsUrl = (params?: GetCommunityInsightsParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/community/insights?${stringifiedParams}` : `/api/community/insights`
+}
+
+/**
+ * @summary Aggregated community stats — answer distributions, top careers, strengths, score spread
+ */
+export const getCommunityInsights = async (params?: GetCommunityInsightsParams, options?: RequestInit): Promise<CommunityInsights> => {
+
+  return customFetch<CommunityInsights>(getGetCommunityInsightsUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetCommunityInsightsQueryKey = (params?: GetCommunityInsightsParams,) => {
+    return [
+    `/api/community/insights`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getGetCommunityInsightsQueryOptions = <TData = Awaited<ReturnType<typeof getCommunityInsights>>, TError = ErrorType<unknown>>(params?: GetCommunityInsightsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCommunityInsights>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetCommunityInsightsQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCommunityInsights>>> = ({ signal }) => getCommunityInsights(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getCommunityInsights>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetCommunityInsightsQueryResult = NonNullable<Awaited<ReturnType<typeof getCommunityInsights>>>
+export type GetCommunityInsightsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Aggregated community stats — answer distributions, top careers, strengths, score spread
+ */
+
+export function useGetCommunityInsights<TData = Awaited<ReturnType<typeof getCommunityInsights>>, TError = ErrorType<unknown>>(
+ params?: GetCommunityInsightsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCommunityInsights>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetCommunityInsightsQueryOptions(params,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

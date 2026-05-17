@@ -226,6 +226,47 @@ export const GetCareerRoadmapResponse = zod.object({
 
 
 /**
+ * @summary Aggregated community stats — answer distributions, top careers, strengths, score spread
+ */
+export const GetCommunityInsightsQueryParams = zod.object({
+  "profileId": zod.coerce.number().optional().describe('When provided, includes this profile\'s own answers alongside community data')
+})
+
+export const GetCommunityInsightsResponse = zod.object({
+  "totalMembers": zod.number(),
+  "assessmentsCompleted": zod.number(),
+  "avgScore": zod.number(),
+  "myScore": zod.number().nullish(),
+  "scoreDistribution": zod.array(zod.object({
+  "range": zod.string(),
+  "count": zod.number()
+})),
+  "topCareers": zod.array(zod.object({
+  "careerTitle": zod.string(),
+  "count": zod.number(),
+  "avgCompatibilityScore": zod.number()
+})),
+  "topStrengths": zod.array(zod.object({
+  "label": zod.string(),
+  "count": zod.number()
+})),
+  "topAreasToImprove": zod.array(zod.object({
+  "label": zod.string(),
+  "count": zod.number()
+})),
+  "questionBreakdowns": zod.array(zod.object({
+  "questionText": zod.string(),
+  "questionType": zod.string(),
+  "answers": zod.array(zod.object({
+  "label": zod.string(),
+  "count": zod.number()
+})),
+  "myAnswer": zod.string().nullish()
+}))
+})
+
+
+/**
  * @summary Get the completed assessment result (analysis, strengths, weaknesses) for a profile
  */
 export const GetProfileAssessmentResultParams = zod.object({

@@ -27,6 +27,7 @@ function Router() {
       <Route path="/profile/:id/roadmap" component={Roadmap} />
       <Route path="/chat" component={ChatIndex} />
       <Route path="/chat/:id" component={ChatView} />
+      <Route path="/community" component={Community} />
       <Route component={NotFound} />
     </Switch>
   );

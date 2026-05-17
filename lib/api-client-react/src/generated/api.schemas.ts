@@ -89,6 +89,43 @@ export interface Assessment {
   completedAt?: string | null;
 }
 
+export interface ScoreBucket {
+  range: string;
+  count: number;
+}
+
+export interface CareerStat {
+  careerTitle: string;
+  count: number;
+  avgCompatibilityScore: number;
+}
+
+export interface FrequencyItem {
+  label: string;
+  count: number;
+}
+
+export interface QuestionBreakdown {
+  questionText: string;
+  questionType: string;
+  answers: FrequencyItem[];
+  /** @nullable */
+  myAnswer?: string | null;
+}
+
+export interface CommunityInsights {
+  totalMembers: number;
+  assessmentsCompleted: number;
+  avgScore: number;
+  /** @nullable */
+  myScore?: number | null;
+  scoreDistribution: ScoreBucket[];
+  topCareers: CareerStat[];
+  topStrengths: FrequencyItem[];
+  topAreasToImprove: FrequencyItem[];
+  questionBreakdowns: QuestionBreakdown[];
+}
+
 export interface StoredAssessmentResult {
   assessmentId: number;
   profileId: number;
@@ -223,4 +260,11 @@ export interface OpenaiConversationWithMessages {
 export interface OpenaiError {
   error: string;
 }
+
+export type GetCommunityInsightsParams = {
+/**
+ * When provided, includes this profile's own answers alongside community data
+ */
+profileId?: number;
+};
 

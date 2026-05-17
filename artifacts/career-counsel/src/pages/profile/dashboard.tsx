@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { Target, Map as MapIcon, BrainCircuit, ArrowRight, Play, CheckCircle2 } from "lucide-react";
+import { Target, Map as MapIcon, BrainCircuit, ArrowRight, Play, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export default function ProfileDashboard() {
@@ -141,13 +141,22 @@ export default function ProfileDashboard() {
                       {summary?.lastActivity ? new Date(summary.lastActivity).toLocaleDateString() : "Just now"}
                     </p>
                   </div>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="w-full justify-between"
                     onClick={() => setLocation('/chat')}
                     data-testid="btn-open-coach"
                   >
                     Talk to AI Coach
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="w-full justify-between"
+                    onClick={() => setLocation(`/community?profileId=${id}`)}
+                    data-testid="btn-community"
+                  >
+                    <span className="flex items-center gap-2"><Users className="h-4 w-4" />Community Insights</span>
                     <ArrowRight className="h-4 w-4" />
                   </Button>
                 </>
