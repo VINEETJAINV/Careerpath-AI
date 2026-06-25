@@ -6,10 +6,6 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface SkillTestResult {
-  skillId: number;
-  skillName: string;
-  testedLevel: number;
-  summary: string;
-  advice?: string[];
+export interface PrivacyInput {
+  isPublic: boolean;
 }

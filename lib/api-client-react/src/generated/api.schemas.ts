@@ -397,7 +397,58 @@ export interface SkillTestResult {
   skillName: string;
   testedLevel: number;
   summary: string;
-  advice: string[];
+  advice?: string[];
+}
+
+export interface LearningResource {
+  id: number;
+  resourceType: string;
+  title: string;
+  /** @nullable */
+  platform?: string | null;
+  /** @nullable */
+  url?: string | null;
+  /** @nullable */
+  description?: string | null;
+  /** @nullable */
+  difficulty?: string | null;
+  isFree: boolean;
+  createdAt: string;
+}
+
+export interface ProgressPost {
+  id: number;
+  profileId: number;
+  authorName: string;
+  content: string;
+  postType: string;
+  /** @nullable */
+  metadata?: string | null;
+  createdAt: string;
+}
+
+export type ProgressPostInputPostType = typeof ProgressPostInputPostType[keyof typeof ProgressPostInputPostType];
+
+
+export const ProgressPostInputPostType = {
+  milestone_complete: 'milestone_complete',
+  skill_achieved: 'skill_achieved',
+  general_update: 'general_update',
+} as const;
+
+export interface ProgressPostInput {
+  /** @minLength 1 */
+  content: string;
+  postType: ProgressPostInputPostType;
+  metadata?: string;
+}
+
+export interface PrivacyInput {
+  isPublic: boolean;
+}
+
+export interface ApiSuccess {
+  success: boolean;
 }
 
 /**

@@ -308,6 +308,182 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SkillTestResult"
+
+  /profiles/{id}/skills/{skillId}/resources:
+    get:
+      operationId: getSkillResources
+      tags: [community]
+      summary: Get saved learning resources for a skill
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: skillId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Learning resources for the skill
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LearningResource"
+    post:
+      operationId: generateSkillResources
+      tags: [community]
+      summary: AI-generate personalized learning resources for a skill
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: skillId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Generated learning resources
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LearningResource"
+
+  /profiles/{id}/careers/{careerId}/resources:
+    get:
+      operationId: getCareerResources
+      tags: [careers]
+      summary: Get saved learning resources for a career path
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: careerId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Learning resources for the career path
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LearningResource"
+    post:
+      operationId: generateCareerResources
+      tags: [careers]
+      summary: AI-generate a curated learning plan for a career path
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: careerId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Generated learning resources
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LearningResource"
+
+  /profiles/{id}/privacy:
+    put:
+      operationId: updateProfilePrivacy
+      tags: [profiles]
+      summary: Update profile public/private visibility
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - $ref: '#/components/parameters/AuthorizationSessionHeader'
+        - $ref: '#/components/parameters/SessionCookie'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PrivacyInput"
+      responses:
+        "200":
+          description: Privacy updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+
+  /community/feed:
+    get:
+      operationId: getCommunityFeed
+      tags: [community]
+      summary: Get progress posts from public profiles
+      responses:
+        "200":
+          description: Community progress feed
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProgressPost"
+
+  /profiles/{id}/progress-posts:
+    post:
+      operationId: createProgressPost
+      tags: [community]
+      summary: Share a progress update to the community feed
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - $ref: '#/components/parameters/AuthorizationSessionHeader'
+        - $ref: '#/components/parameters/SessionCookie'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProgressPostInput"
+      responses:
+        "201":
+          description: Post created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProgressPost"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
   /healthz:
     get:
       operationId: healthCheck
@@ -1554,4 +1730,89 @@ components:
         - skillName
         - testedLevel
         - summary
-        - advice
+
+    LearningResource:
+      type: object
+      properties:
+        id:
+          type: integer
+        resourceType:
+          type: string
+        title:
+          type: string
+        platform:
+          type: ["string", "null"]
+        url:
+          type: ["string", "null"]
+        description:
+          type: ["string", "null"]
+        difficulty:
+          type: ["string", "null"]
+        isFree:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - resourceType
+        - title
+        - isFree
+        - createdAt
+
+    ProgressPost:
+      type: object
+      properties:
+        id:
+          type: integer
+        profileId:
+          type: integer
+        authorName:
+          type: string
+        content:
+          type: string
+        postType:
+          type: string
+        metadata:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - profileId
+        - authorName
+        - content
+        - postType
+        - createdAt
+
+    ProgressPostInput:
+      type: object
+      properties:
+        content:
+          type: string
+          minLength: 1
+        postType:
+          type: string
+          enum: [milestone_complete, skill_achieved, general_update]
+        metadata:
+          type: string
+      required:
+        - content
+        - postType
+
+    PrivacyInput:
+      type: object
+      properties:
+        isPublic:
+          type: boolean
+      required:
+        - isPublic
+
+    ApiSuccess:
+      type: object
+      properties:
+        success:
+          type: boolean
+      required:
+        - success

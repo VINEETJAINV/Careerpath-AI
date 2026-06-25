@@ -7,6 +7,7 @@
  */
 
 export * from './apiError';
+export * from './apiSuccess';
 export * from './assessment';
 export * from './assessmentInput';
 export * from './assessmentQuestion';
@@ -30,12 +31,14 @@ export * from './getCommunityInsightsParams';
 export * from './getRoadmapProgressParams';
 export * from './handleBrowserLoginCallbackParams';
 export * from './healthStatus';
+export * from './learningResource';
 export * from './openaiConversation';
 export * from './openaiConversationInput';
 export * from './openaiConversationWithMessages';
 export * from './openaiError';
 export * from './openaiMessage';
 export * from './openaiMessageInput';
+export * from './privacyInput';
 export * from './profile';
 export * from './profileComment';
 export * from './profileCommentInput';
@@ -43,6 +46,9 @@ export * from './profileInput';
 export * from './profileSummary';
 export * from './profileUpdate';
 export * from './progressEntry';
+export * from './progressPost';
+export * from './progressPostInput';
+export * from './progressPostInputPostType';
 export * from './progressUpdate';
 export * from './publicProfile';
 export * from './questionAnswer';

@@ -21,6 +21,7 @@ import type {
 
 import type {
   ApiError,
+  ApiSuccess,
   Assessment,
   AssessmentInput,
   AssessmentResult,
@@ -37,12 +38,14 @@ import type {
   GetRoadmapProgressParams,
   HandleBrowserLoginCallbackParams,
   HealthStatus,
+  LearningResource,
   OpenaiConversation,
   OpenaiConversationInput,
   OpenaiConversationWithMessages,
   OpenaiError,
   OpenaiMessage,
   OpenaiMessageInput,
+  PrivacyInput,
   Profile,
   ProfileComment,
   ProfileCommentInput,
@@ -50,6 +53,8 @@ import type {
   ProfileSummary,
   ProfileUpdate,
   ProgressEntry,
+  ProgressPost,
+  ProgressPostInput,
   ProgressUpdate,
   PublicProfile,
   SkillInput,
@@ -1078,6 +1083,535 @@ export const useRunSkillTest = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getRunSkillTestMutationOptions(options));
+    }
+
+export const getGetSkillResourcesUrl = (id: number,
+    skillId: number,) => {
+
+
+
+
+  return `/api/profiles/${id}/skills/${skillId}/resources`
+}
+
+/**
+ * @summary Get saved learning resources for a skill
+ */
+export const getSkillResources = async (id: number,
+    skillId: number, options?: RequestInit): Promise<LearningResource[]> => {
+
+  return customFetch<LearningResource[]>(getGetSkillResourcesUrl(id,skillId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetSkillResourcesQueryKey = (id: number,
+    skillId: number,) => {
+    return [
+    `/api/profiles/${id}/skills/${skillId}/resources`
+    ] as const;
+    }
+
+
+export const getGetSkillResourcesQueryOptions = <TData = Awaited<ReturnType<typeof getSkillResources>>, TError = ErrorType<unknown>>(id: number,
+    skillId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getSkillResources>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetSkillResourcesQueryKey(id,skillId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSkillResources>>> = ({ signal }) => getSkillResources(id,skillId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(id && skillId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSkillResources>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetSkillResourcesQueryResult = NonNullable<Awaited<ReturnType<typeof getSkillResources>>>
+export type GetSkillResourcesQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Get saved learning resources for a skill
+ */
+
+export function useGetSkillResources<TData = Awaited<ReturnType<typeof getSkillResources>>, TError = ErrorType<unknown>>(
+ id: number,
+    skillId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getSkillResources>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetSkillResourcesQueryOptions(id,skillId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getGenerateSkillResourcesUrl = (id: number,
+    skillId: number,) => {
+
+
+
+
+  return `/api/profiles/${id}/skills/${skillId}/resources`
+}
+
+/**
+ * @summary AI-generate personalized learning resources for a skill
+ */
+export const generateSkillResources = async (id: number,
+    skillId: number, options?: RequestInit): Promise<LearningResource[]> => {
+
+  return customFetch<LearningResource[]>(getGenerateSkillResourcesUrl(id,skillId),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+export const getGenerateSkillResourcesMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof generateSkillResources>>, TError,{id: number;skillId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof generateSkillResources>>, TError,{id: number;skillId: number}, TContext> => {
+
+const mutationKey = ['generateSkillResources'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof generateSkillResources>>, {id: number;skillId: number}> = (props) => {
+          const {id,skillId} = props ?? {};
+
+          return  generateSkillResources(id,skillId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type GenerateSkillResourcesMutationResult = NonNullable<Awaited<ReturnType<typeof generateSkillResources>>>
+
+    export type GenerateSkillResourcesMutationError = ErrorType<unknown>
+
+    /**
+ * @summary AI-generate personalized learning resources for a skill
+ */
+export const useGenerateSkillResources = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof generateSkillResources>>, TError,{id: number;skillId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof generateSkillResources>>,
+        TError,
+        {id: number;skillId: number},
+        TContext
+      > => {
+      return useMutation(getGenerateSkillResourcesMutationOptions(options));
+    }
+
+export const getGetCareerResourcesUrl = (id: number,
+    careerId: number,) => {
+
+
+
+
+  return `/api/profiles/${id}/careers/${careerId}/resources`
+}
+
+/**
+ * @summary Get saved learning resources for a career path
+ */
+export const getCareerResources = async (id: number,
+    careerId: number, options?: RequestInit): Promise<LearningResource[]> => {
+
+  return customFetch<LearningResource[]>(getGetCareerResourcesUrl(id,careerId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetCareerResourcesQueryKey = (id: number,
+    careerId: number,) => {
+    return [
+    `/api/profiles/${id}/careers/${careerId}/resources`
+    ] as const;
+    }
+
+
+export const getGetCareerResourcesQueryOptions = <TData = Awaited<ReturnType<typeof getCareerResources>>, TError = ErrorType<unknown>>(id: number,
+    careerId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCareerResources>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetCareerResourcesQueryKey(id,careerId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCareerResources>>> = ({ signal }) => getCareerResources(id,careerId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(id && careerId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getCareerResources>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetCareerResourcesQueryResult = NonNullable<Awaited<ReturnType<typeof getCareerResources>>>
+export type GetCareerResourcesQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Get saved learning resources for a career path
+ */
+
+export function useGetCareerResources<TData = Awaited<ReturnType<typeof getCareerResources>>, TError = ErrorType<unknown>>(
+ id: number,
+    careerId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCareerResources>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetCareerResourcesQueryOptions(id,careerId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getGenerateCareerResourcesUrl = (id: number,
+    careerId: number,) => {
+
+
+
+
+  return `/api/profiles/${id}/careers/${careerId}/resources`
+}
+
+/**
+ * @summary AI-generate a curated learning plan for a career path
+ */
+export const generateCareerResources = async (id: number,
+    careerId: number, options?: RequestInit): Promise<LearningResource[]> => {
+
+  return customFetch<LearningResource[]>(getGenerateCareerResourcesUrl(id,careerId),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+export const getGenerateCareerResourcesMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof generateCareerResources>>, TError,{id: number;careerId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof generateCareerResources>>, TError,{id: number;careerId: number}, TContext> => {
+
+const mutationKey = ['generateCareerResources'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof generateCareerResources>>, {id: number;careerId: number}> = (props) => {
+          const {id,careerId} = props ?? {};
+
+          return  generateCareerResources(id,careerId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type GenerateCareerResourcesMutationResult = NonNullable<Awaited<ReturnType<typeof generateCareerResources>>>
+
+    export type GenerateCareerResourcesMutationError = ErrorType<unknown>
+
+    /**
+ * @summary AI-generate a curated learning plan for a career path
+ */
+export const useGenerateCareerResources = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof generateCareerResources>>, TError,{id: number;careerId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof generateCareerResources>>,
+        TError,
+        {id: number;careerId: number},
+        TContext
+      > => {
+      return useMutation(getGenerateCareerResourcesMutationOptions(options));
+    }
+
+export const getUpdateProfilePrivacyUrl = (id: number,) => {
+
+
+
+
+  return `/api/profiles/${id}/privacy`
+}
+
+/**
+ * @summary Update profile public/private visibility
+ */
+export const updateProfilePrivacy = async (id: number,
+    privacyInput: PrivacyInput, options?: RequestInit): Promise<ApiSuccess> => {
+
+  return customFetch<ApiSuccess>(getUpdateProfilePrivacyUrl(id),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      privacyInput,)
+  }
+);}
+
+
+
+
+export const getUpdateProfilePrivacyMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateProfilePrivacy>>, TError,{id: number;data: BodyType<PrivacyInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateProfilePrivacy>>, TError,{id: number;data: BodyType<PrivacyInput>}, TContext> => {
+
+const mutationKey = ['updateProfilePrivacy'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateProfilePrivacy>>, {id: number;data: BodyType<PrivacyInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateProfilePrivacy(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateProfilePrivacyMutationResult = NonNullable<Awaited<ReturnType<typeof updateProfilePrivacy>>>
+    export type UpdateProfilePrivacyMutationBody = BodyType<PrivacyInput>
+    export type UpdateProfilePrivacyMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Update profile public/private visibility
+ */
+export const useUpdateProfilePrivacy = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateProfilePrivacy>>, TError,{id: number;data: BodyType<PrivacyInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateProfilePrivacy>>,
+        TError,
+        {id: number;data: BodyType<PrivacyInput>},
+        TContext
+      > => {
+      return useMutation(getUpdateProfilePrivacyMutationOptions(options));
+    }
+
+export const getGetCommunityFeedUrl = () => {
+
+
+
+
+  return `/api/community/feed`
+}
+
+/**
+ * @summary Get progress posts from public profiles
+ */
+export const getCommunityFeed = async ( options?: RequestInit): Promise<ProgressPost[]> => {
+
+  return customFetch<ProgressPost[]>(getGetCommunityFeedUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetCommunityFeedQueryKey = () => {
+    return [
+    `/api/community/feed`
+    ] as const;
+    }
+
+
+export const getGetCommunityFeedQueryOptions = <TData = Awaited<ReturnType<typeof getCommunityFeed>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCommunityFeed>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetCommunityFeedQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCommunityFeed>>> = ({ signal }) => getCommunityFeed({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getCommunityFeed>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetCommunityFeedQueryResult = NonNullable<Awaited<ReturnType<typeof getCommunityFeed>>>
+export type GetCommunityFeedQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Get progress posts from public profiles
+ */
+
+export function useGetCommunityFeed<TData = Awaited<ReturnType<typeof getCommunityFeed>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCommunityFeed>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetCommunityFeedQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getCreateProgressPostUrl = (id: number,) => {
+
+
+
+
+  return `/api/profiles/${id}/progress-posts`
+}
+
+/**
+ * @summary Share a progress update to the community feed
+ */
+export const createProgressPost = async (id: number,
+    progressPostInput: ProgressPostInput, options?: RequestInit): Promise<ProgressPost> => {
+
+  return customFetch<ProgressPost>(getCreateProgressPostUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      progressPostInput,)
+  }
+);}
+
+
+
+
+export const getCreateProgressPostMutationOptions = <TError = ErrorType<ApiError>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createProgressPost>>, TError,{id: number;data: BodyType<ProgressPostInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createProgressPost>>, TError,{id: number;data: BodyType<ProgressPostInput>}, TContext> => {
+
+const mutationKey = ['createProgressPost'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createProgressPost>>, {id: number;data: BodyType<ProgressPostInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  createProgressPost(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateProgressPostMutationResult = NonNullable<Awaited<ReturnType<typeof createProgressPost>>>
+    export type CreateProgressPostMutationBody = BodyType<ProgressPostInput>
+    export type CreateProgressPostMutationError = ErrorType<ApiError>
+
+    /**
+ * @summary Share a progress update to the community feed
+ */
+export const useCreateProgressPost = <TError = ErrorType<ApiError>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createProgressPost>>, TError,{id: number;data: BodyType<ProgressPostInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createProgressPost>>,
+        TError,
+        {id: number;data: BodyType<ProgressPostInput>},
+        TContext
+      > => {
+      return useMutation(getCreateProgressPostMutationOptions(options));
     }
 
 export const getHealthCheckUrl = () => {

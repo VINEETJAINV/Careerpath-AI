@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, isNull, or } from "drizzle-orm";
 import { db } from "@workspace/db";
 import {
   profilesTable,
@@ -8,17 +8,20 @@ import {
   profileCommentsTable,
   roadmapProgressTable,
   userSkillsTable,
+  learningResourcesTable,
+  progressPostsTable,
 } from "@workspace/db";
 import { openai } from "@workspace/integrations-openai-ai-server";
 
 const router = Router();
 
-// ── Community members directory ──────────────────────────────────────────────
+// ── Community members directory (public profiles only) ────────────────────────
 router.get("/community/members", async (req, res) => {
   try {
     const profiles = await db
       .select()
       .from(profilesTable)
+      .where(eq(profilesTable.isPublic, 1))
       .orderBy(desc(profilesTable.createdAt));
 
     const assessments = await db
@@ -57,6 +60,33 @@ router.get("/community/members", async (req, res) => {
   }
 });
 
+// ── Community progress feed (public profiles only) ───────────────────────────
+router.get("/community/feed", async (req, res) => {
+  try {
+    const posts = await db
+      .select({
+        post: progressPostsTable,
+        isPublic: profilesTable.isPublic,
+      })
+      .from(progressPostsTable)
+      .leftJoin(profilesTable, eq(progressPostsTable.profileId, profilesTable.id))
+      .where(eq(profilesTable.isPublic, 1))
+      .orderBy(desc(progressPostsTable.createdAt))
+      .limit(50);
+
+    res.json(
+      posts.map(({ post }) => ({
+        ...post,
+        createdAt: post.createdAt.toISOString(),
+        metadata: post.metadata ?? null,
+      }))
+    );
+  } catch (e) {
+    req.log.error(e);
+    res.status(500).json({ error: "Failed to fetch community feed" });
+  }
+});
+
 // ── Public profile view ───────────────────────────────────────────────────────
 router.get("/profiles/:id/public", async (req, res) => {
   const id = Number(req.params.id);
@@ -65,6 +95,14 @@ router.get("/profiles/:id/public", async (req, res) => {
   try {
     const [profile] = await db.select().from(profilesTable).where(eq(profilesTable.id, id));
     if (!profile) { res.status(404).json({ error: "Profile not found" }); return; }
+
+    // Only allow viewing if public, or if it's the authenticated owner
+    const viewerUserId = req.isAuthenticated() ? req.user.id : null;
+    const isOwner = viewerUserId && profile.userId === viewerUserId;
+    if (!profile.isPublic && !isOwner) {
+      res.status(403).json({ error: "This profile is private" });
+      return;
+    }
 
     const [assessment] = await db
       .select()
@@ -121,6 +159,29 @@ router.get("/profiles/:id/public", async (req, res) => {
   } catch (e) {
     req.log.error(e);
     res.status(500).json({ error: "Failed to fetch public profile" });
+  }
+});
+
+// ── Privacy toggle ────────────────────────────────────────────────────────────
+router.put("/profiles/:id/privacy", async (req, res) => {
+  const id = Number(req.params.id);
+  if (isNaN(id)) { res.status(400).json({ error: "Invalid ID" }); return; }
+
+  const { isPublic } = req.body as { isPublic?: boolean };
+  if (typeof isPublic !== "boolean") {
+    res.status(400).json({ error: "isPublic (boolean) required" });
+    return;
+  }
+
+  try {
+    await db
+      .update(profilesTable)
+      .set({ isPublic: isPublic ? 1 : 0, updatedAt: new Date() })
+      .where(eq(profilesTable.id, id));
+    res.json({ success: true });
+  } catch (e) {
+    req.log.error(e);
+    res.status(500).json({ error: "Failed to update privacy" });
   }
 });
 
@@ -429,6 +490,296 @@ Return ONLY valid JSON:
   } catch (e) {
     req.log.error(e);
     res.status(500).json({ error: "Failed to evaluate skill test" });
+  }
+});
+
+// ── Skill learning resources ──────────────────────────────────────────────────
+router.get("/profiles/:id/skills/:skillId/resources", async (req, res) => {
+  const id = Number(req.params.id);
+  const skillId = Number(req.params.skillId);
+  if (isNaN(id) || isNaN(skillId)) { res.status(400).json({ error: "Invalid ID" }); return; }
+
+  try {
+    const resources = await db
+      .select()
+      .from(learningResourcesTable)
+      .where(
+        and(
+          eq(learningResourcesTable.profileId, id),
+          eq(learningResourcesTable.userSkillId, skillId)
+        )
+      )
+      .orderBy(learningResourcesTable.createdAt);
+
+    res.json(resources.map((r) => ({
+      ...r,
+      isFree: r.isFree === 1,
+      createdAt: r.createdAt.toISOString(),
+    })));
+  } catch (e) {
+    req.log.error(e);
+    res.status(500).json({ error: "Failed to fetch skill resources" });
+  }
+});
+
+router.post("/profiles/:id/skills/:skillId/resources", async (req, res) => {
+  const id = Number(req.params.id);
+  const skillId = Number(req.params.skillId);
+  if (isNaN(id) || isNaN(skillId)) { res.status(400).json({ error: "Invalid ID" }); return; }
+
+  try {
+    const [skill] = await db.select().from(userSkillsTable).where(eq(userSkillsTable.id, skillId));
+    if (!skill) { res.status(404).json({ error: "Skill not found" }); return; }
+
+    // Clear old generated resources first
+    await db.delete(learningResourcesTable).where(
+      and(
+        eq(learningResourcesTable.profileId, id),
+        eq(learningResourcesTable.userSkillId, skillId)
+      )
+    );
+
+    const levelLabel = skill.testedLevel
+      ? `tested at ${skill.testedLevel}/10`
+      : skill.selfRating
+      ? `self-rated at ${skill.selfRating}/10`
+      : "beginner level";
+
+    const prompt = `You are a learning resource curator. For someone learning "${skill.skillName}" (currently ${levelLabel}), recommend 6 specific learning resources.
+
+Include a mix of: free online courses, YouTube channels/playlists, documentation, practice platforms, and books.
+Be specific — use real, well-known platform names (Coursera, Udemy, YouTube, freeCodeCamp, MDN, Codecademy, etc.).
+Tailor difficulty to their current level.
+
+Return ONLY valid JSON array:
+[
+  {
+    "resourceType": "course|youtube|book|tool|website|documentation",
+    "title": "exact resource title",
+    "platform": "platform name",
+    "url": "https://...",
+    "description": "1-2 sentences on what they'll learn and why it suits their level",
+    "difficulty": "beginner|intermediate|advanced",
+    "isFree": true or false
+  }
+]`;
+
+    const response = await openai.chat.completions.create({
+      model: "gpt-5.1",
+      messages: [{ role: "user", content: prompt }],
+      response_format: { type: "json_object" },
+    });
+
+    const raw = response.choices[0]?.message?.content ?? "{}";
+    let items: Array<{
+      resourceType: string;
+      title: string;
+      platform?: string;
+      url?: string;
+      description?: string;
+      difficulty?: string;
+      isFree: boolean;
+    }>;
+    try {
+      const parsed = JSON.parse(raw);
+      items = Array.isArray(parsed) ? parsed : (parsed.resources ?? parsed.items ?? []);
+    } catch {
+      items = [];
+    }
+
+    const inserted = await db
+      .insert(learningResourcesTable)
+      .values(
+        items.map((r) => ({
+          profileId: id,
+          userSkillId: skillId,
+          resourceType: r.resourceType ?? "website",
+          title: r.title,
+          platform: r.platform ?? null,
+          url: r.url ?? null,
+          description: r.description ?? null,
+          difficulty: r.difficulty ?? null,
+          isFree: r.isFree ? 1 : 0,
+        }))
+      )
+      .returning();
+
+    res.json(inserted.map((r) => ({
+      ...r,
+      isFree: r.isFree === 1,
+      createdAt: r.createdAt.toISOString(),
+    })));
+  } catch (e) {
+    req.log.error(e);
+    res.status(500).json({ error: "Failed to generate skill resources" });
+  }
+});
+
+// ── Career learning resources ─────────────────────────────────────────────────
+router.get("/profiles/:id/careers/:careerId/resources", async (req, res) => {
+  const id = Number(req.params.id);
+  const careerId = Number(req.params.careerId);
+  if (isNaN(id) || isNaN(careerId)) { res.status(400).json({ error: "Invalid ID" }); return; }
+
+  try {
+    const resources = await db
+      .select()
+      .from(learningResourcesTable)
+      .where(
+        and(
+          eq(learningResourcesTable.profileId, id),
+          eq(learningResourcesTable.careerSuggestionId, careerId)
+        )
+      )
+      .orderBy(learningResourcesTable.createdAt);
+
+    res.json(resources.map((r) => ({
+      ...r,
+      isFree: r.isFree === 1,
+      createdAt: r.createdAt.toISOString(),
+    })));
+  } catch (e) {
+    req.log.error(e);
+    res.status(500).json({ error: "Failed to fetch career resources" });
+  }
+});
+
+router.post("/profiles/:id/careers/:careerId/resources", async (req, res) => {
+  const id = Number(req.params.id);
+  const careerId = Number(req.params.careerId);
+  if (isNaN(id) || isNaN(careerId)) { res.status(400).json({ error: "Invalid ID" }); return; }
+
+  try {
+    const [career] = await db
+      .select()
+      .from(careerSuggestionsTable)
+      .where(and(eq(careerSuggestionsTable.id, careerId), eq(careerSuggestionsTable.profileId, id)));
+
+    if (!career) { res.status(404).json({ error: "Career not found" }); return; }
+
+    // Clear old generated resources first
+    await db.delete(learningResourcesTable).where(
+      and(
+        eq(learningResourcesTable.profileId, id),
+        eq(learningResourcesTable.careerSuggestionId, careerId)
+      )
+    );
+
+    const requiredSkills: string[] = JSON.parse(career.requiredSkills ?? "[]");
+
+    const prompt = `You are a career learning curator. Someone wants to become a "${career.careerTitle}" (${career.compatibilityScore}% compatibility match).
+
+Key skills they need: ${requiredSkills.join(", ") || "general professional skills"}
+
+Recommend 8 specific, actionable learning resources to help them transition into this career. Include:
+- Online courses (Coursera, Udemy, edX, LinkedIn Learning)
+- Free platforms (YouTube, freeCodeCamp, Khan Academy, Codecademy)
+- Official documentation or certification paths
+- Books or blogs
+- Practice platforms or communities
+
+Return ONLY valid JSON array:
+[
+  {
+    "resourceType": "course|youtube|book|tool|website|certification|documentation",
+    "title": "exact resource title",
+    "platform": "platform name",
+    "url": "https://...",
+    "description": "1-2 sentences on what they'll learn and why it helps for this career",
+    "difficulty": "beginner|intermediate|advanced",
+    "isFree": true or false
+  }
+]`;
+
+    const response = await openai.chat.completions.create({
+      model: "gpt-5.1",
+      messages: [{ role: "user", content: prompt }],
+      response_format: { type: "json_object" },
+    });
+
+    const raw = response.choices[0]?.message?.content ?? "{}";
+    let items: Array<{
+      resourceType: string;
+      title: string;
+      platform?: string;
+      url?: string;
+      description?: string;
+      difficulty?: string;
+      isFree: boolean;
+    }>;
+    try {
+      const parsed = JSON.parse(raw);
+      items = Array.isArray(parsed) ? parsed : (parsed.resources ?? parsed.items ?? []);
+    } catch {
+      items = [];
+    }
+
+    const inserted = await db
+      .insert(learningResourcesTable)
+      .values(
+        items.map((r) => ({
+          profileId: id,
+          careerSuggestionId: careerId,
+          resourceType: r.resourceType ?? "website",
+          title: r.title,
+          platform: r.platform ?? null,
+          url: r.url ?? null,
+          description: r.description ?? null,
+          difficulty: r.difficulty ?? null,
+          isFree: r.isFree ? 1 : 0,
+        }))
+      )
+      .returning();
+
+    res.json(inserted.map((r) => ({
+      ...r,
+      isFree: r.isFree === 1,
+      createdAt: r.createdAt.toISOString(),
+    })));
+  } catch (e) {
+    req.log.error(e);
+    res.status(500).json({ error: "Failed to generate career resources" });
+  }
+});
+
+// ── Progress posts ────────────────────────────────────────────────────────────
+router.post("/profiles/:id/progress-posts", async (req, res) => {
+  if (!req.isAuthenticated()) {
+    res.status(401).json({ error: "Must be logged in to post" });
+    return;
+  }
+  const id = Number(req.params.id);
+  if (isNaN(id)) { res.status(400).json({ error: "Invalid ID" }); return; }
+
+  const { content, postType, metadata } = req.body as {
+    content?: string;
+    postType?: string;
+    metadata?: string;
+  };
+  if (!content?.trim()) { res.status(400).json({ error: "Content required" }); return; }
+
+  try {
+    const authorName =
+      [req.user.firstName, req.user.lastName].filter(Boolean).join(" ") || "Anonymous";
+    const [post] = await db
+      .insert(progressPostsTable)
+      .values({
+        profileId: id,
+        authorName,
+        content: content.trim(),
+        postType: postType ?? "general_update",
+        metadata: metadata ?? null,
+      })
+      .returning();
+
+    res.status(201).json({
+      ...post!,
+      createdAt: post!.createdAt.toISOString(),
+      metadata: post!.metadata ?? null,
+    });
+  } catch (e) {
+    req.log.error(e);
+    res.status(500).json({ error: "Failed to create post" });
   }
 });
 

@@ -278,7 +278,151 @@ export const RunSkillTestResponse = zod.object({
   "skillName": zod.string(),
   "testedLevel": zod.number(),
   "summary": zod.string(),
-  "advice": zod.array(zod.string())
+  "advice": zod.array(zod.string()).optional()
+})
+
+
+/**
+ * @summary Get saved learning resources for a skill
+ */
+export const GetSkillResourcesParams = zod.object({
+  "id": zod.coerce.number(),
+  "skillId": zod.coerce.number()
+})
+
+export const GetSkillResourcesResponseItem = zod.object({
+  "id": zod.number(),
+  "resourceType": zod.string(),
+  "title": zod.string(),
+  "platform": zod.string().nullish(),
+  "url": zod.string().nullish(),
+  "description": zod.string().nullish(),
+  "difficulty": zod.string().nullish(),
+  "isFree": zod.boolean(),
+  "createdAt": zod.coerce.date()
+})
+export const GetSkillResourcesResponse = zod.array(GetSkillResourcesResponseItem)
+
+
+/**
+ * @summary AI-generate personalized learning resources for a skill
+ */
+export const GenerateSkillResourcesParams = zod.object({
+  "id": zod.coerce.number(),
+  "skillId": zod.coerce.number()
+})
+
+export const GenerateSkillResourcesResponseItem = zod.object({
+  "id": zod.number(),
+  "resourceType": zod.string(),
+  "title": zod.string(),
+  "platform": zod.string().nullish(),
+  "url": zod.string().nullish(),
+  "description": zod.string().nullish(),
+  "difficulty": zod.string().nullish(),
+  "isFree": zod.boolean(),
+  "createdAt": zod.coerce.date()
+})
+export const GenerateSkillResourcesResponse = zod.array(GenerateSkillResourcesResponseItem)
+
+
+/**
+ * @summary Get saved learning resources for a career path
+ */
+export const GetCareerResourcesParams = zod.object({
+  "id": zod.coerce.number(),
+  "careerId": zod.coerce.number()
+})
+
+export const GetCareerResourcesResponseItem = zod.object({
+  "id": zod.number(),
+  "resourceType": zod.string(),
+  "title": zod.string(),
+  "platform": zod.string().nullish(),
+  "url": zod.string().nullish(),
+  "description": zod.string().nullish(),
+  "difficulty": zod.string().nullish(),
+  "isFree": zod.boolean(),
+  "createdAt": zod.coerce.date()
+})
+export const GetCareerResourcesResponse = zod.array(GetCareerResourcesResponseItem)
+
+
+/**
+ * @summary AI-generate a curated learning plan for a career path
+ */
+export const GenerateCareerResourcesParams = zod.object({
+  "id": zod.coerce.number(),
+  "careerId": zod.coerce.number()
+})
+
+export const GenerateCareerResourcesResponseItem = zod.object({
+  "id": zod.number(),
+  "resourceType": zod.string(),
+  "title": zod.string(),
+  "platform": zod.string().nullish(),
+  "url": zod.string().nullish(),
+  "description": zod.string().nullish(),
+  "difficulty": zod.string().nullish(),
+  "isFree": zod.boolean(),
+  "createdAt": zod.coerce.date()
+})
+export const GenerateCareerResourcesResponse = zod.array(GenerateCareerResourcesResponseItem)
+
+
+/**
+ * @summary Update profile public/private visibility
+ */
+export const UpdateProfilePrivacyParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const UpdateProfilePrivacyHeader = zod.object({
+  "Authorization": zod.string().optional().describe('Opaque session token — `Bearer <sid>`.')
+})
+
+export const UpdateProfilePrivacyBody = zod.object({
+  "isPublic": zod.boolean()
+})
+
+export const UpdateProfilePrivacyResponse = zod.object({
+  "success": zod.boolean()
+})
+
+
+/**
+ * @summary Get progress posts from public profiles
+ */
+export const GetCommunityFeedResponseItem = zod.object({
+  "id": zod.number(),
+  "profileId": zod.number(),
+  "authorName": zod.string(),
+  "content": zod.string(),
+  "postType": zod.string(),
+  "metadata": zod.string().nullish(),
+  "createdAt": zod.coerce.date()
+})
+export const GetCommunityFeedResponse = zod.array(GetCommunityFeedResponseItem)
+
+
+/**
+ * @summary Share a progress update to the community feed
+ */
+export const CreateProgressPostParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const CreateProgressPostHeader = zod.object({
+  "Authorization": zod.string().optional().describe('Opaque session token — `Bearer <sid>`.')
+})
+
+
+
+
+export const CreateProgressPostBody = zod.object({
+  "content": zod.string().min(1),
+  "postType": zod.enum(['milestone_complete', 'skill_achieved', 'general_update']),
+  "metadata": zod.string().optional()
 })
 
 
