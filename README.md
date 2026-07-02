@@ -133,7 +133,7 @@ All OpenAI variables are auto-configured via **Replit AI Integrations** — no m
 
 ## Live Demo
 
-🌐 [https://856b8c0e-5a66-42a1-8e56-b8b5512ac228-00-249w9h3t03ws1.sisko.replit.dev](https://856b8c0e-5a66-42a1-8e56-b8b5512ac228-00-249w9h3t03ws1.sisko.replit.dev)
+🌐 [[https://career-navigator--vineeetvj593.replit.app/](https://career-navigator--vineeetvj593.replit.app/)]
 
 ## Screenshots
 
