@@ -1,17 +1,16 @@
 import { useLocation, Link } from "wouter";
 import { AppLayout } from "@/components/layout/AppLayout";
 import {
+  getMyProfile,
+  getGetMyProfileQueryKey,
   useGetProfileSummary,
-  getGetProfileSummaryQueryKey,
   useGetFollowedCareers,
-  getGetFollowedCareersQueryKey,
   useGetRoadmapProgress,
-  getGetRoadmapProgressQueryKey,
   useGetCareerSuggestions,
-  getGetCareerSuggestionsQueryKey,
   useCreateAssessment,
 } from "@workspace/api-client-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { useQuery } from "@tanstack/react-query";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
@@ -23,7 +22,6 @@ import {
   Play,
   Users,
   Zap,
-  BrainCircuit,
   BookOpen,
   Trophy,
   ChevronRight,
@@ -32,39 +30,38 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import { useAuth } from "@workspace/replit-auth-web";
 
 export default function Dashboard() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
-  const queryClient = useQueryClient();
-  const { user, isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
 
-  // Get the user's profile from auth context
   const [profileId, setProfileId] = useState<number | null>(null);
 
-  const { data: summary, isLoading: isLoadingSummary } = useGetProfileSummary(profileId ?? 0);
+  // ── Load the user's profile from the server after login ──
+  const { data: myProfile, isLoading: loadingProfile } = useQuery({
+    queryKey: getGetMyProfileQueryKey(),
+    queryFn: getMyProfile,
+    enabled: isAuthenticated,
+    retry: false,
+    refetchOnWindowFocus: false,
+  });
 
-  const { data: followedCareers, isLoading: isLoadingCareers } = useGetFollowedCareers(profileId ?? 0);
-
-  const { data: progress } = useGetRoadmapProgress(profileId ?? 0);
-
-  const { data: suggestions } = useGetCareerSuggestions(profileId ?? 0);
-
-  const createAssessment = useCreateAssessment();
-
-  // Derive profileId from user auth + stored profile
   useEffect(() => {
-    if (!isAuthenticated || !user) return;
-    // Simple heuristic: try to load from localStorage or default to /profile/new
-    const stored = localStorage.getItem("lastProfileId");
-    if (stored) {
-      const id = Number(stored);
-      if (!isNaN(id)) setProfileId(id);
+    if (myProfile) {
+      setProfileId(myProfile.id);
+      localStorage.setItem("lastProfileId", String(myProfile.id));
     }
-  }, [isAuthenticated, user]);
+  }, [myProfile]);
+
+  // ── Load all dashboard data once we know the profileId ──
+  const { data: summary, isLoading: isLoadingSummary } = useGetProfileSummary(profileId ?? 0);
+  const { data: followedCareers } = useGetFollowedCareers(profileId ?? 0);
+  const { data: progress } = useGetRoadmapProgress(profileId ?? 0);
+  const { data: suggestions } = useGetCareerSuggestions(profileId ?? 0);
+  const createAssessment = useCreateAssessment();
 
   const handleStartAssessment = () => {
     if (!profileId) return;
@@ -78,22 +75,20 @@ export default function Dashboard() {
     );
   };
 
-  // Calculate overall progress
   const completedMilestones =
     progress?.filter((p) => p.status === "completed" || p.completed).length ?? 0;
   const totalMilestones = progress?.length ?? 0;
   const overallPercent = totalMilestones > 0 ? Math.round((completedMilestones / totalMilestones) * 100) : 0;
 
-  // Most recently completed milestones (top 3)
   const recentMilestones =
     progress
       ?.filter((p) => p.status === "completed" || p.completed)
       .sort((a, b) => new Date(b.completedAt || 0).getTime() - new Date(a.completedAt || 0).getTime())
       .slice(0, 3) ?? [];
 
-  // Primary career
   const primary = followedCareers?.find((c) => c.isPrimary === 1) ?? followedCareers?.[0];
 
+  // ── Not logged in ──
   if (!isAuthenticated) {
     return (
       <AppLayout>
@@ -122,7 +117,25 @@ export default function Dashboard() {
     );
   }
 
-  if (!profileId) {
+  // ── Loading profile from server ──
+  if (loadingProfile) {
+    return (
+      <AppLayout>
+        <div className="container mx-auto max-w-6xl py-12 px-4 space-y-8">
+          <Skeleton className="h-9 w-48" />
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[1, 2, 3, 4].map((i) => (
+              <Card key={i} className="border shadow-sm"><CardContent className="pt-6"><Skeleton className="h-10 w-full" /></CardContent></Card>
+            ))}
+          </div>
+          <Skeleton className="h-64 w-full" />
+        </div>
+      </AppLayout>
+    );
+  }
+
+  // ── Logged in but no profile yet ──
+  if (!myProfile) {
     return (
       <AppLayout>
         <div className="container mx-auto max-w-xl py-20 px-4 text-center">
@@ -145,6 +158,7 @@ export default function Dashboard() {
     );
   }
 
+  // ── Full Dashboard ──
   return (
     <AppLayout>
       <div className="container mx-auto max-w-6xl py-12 px-4 space-y-8">

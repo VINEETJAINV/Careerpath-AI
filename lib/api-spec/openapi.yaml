@@ -703,6 +703,34 @@ paths:
                 items:
                   $ref: "#/components/schemas/Profile"
 
+  /profiles/me:
+    get:
+      operationId: getMyProfile
+      tags: [profiles]
+      summary: Get the current authenticated user's profile
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationSessionHeader'
+        - $ref: '#/components/parameters/SessionCookie'
+      responses:
+        "200":
+          description: User's most recent profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Profile"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "404":
+          description: No profile found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
   /profiles/{id}:
     get:
       operationId: getProfile

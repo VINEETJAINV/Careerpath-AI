@@ -640,6 +640,29 @@ export const ListProfilesResponse = zod.array(ListProfilesResponseItem)
 
 
 /**
+ * @summary Get the current authenticated user's profile
+ */
+export const GetMyProfileHeader = zod.object({
+  "Authorization": zod.string().optional().describe('Opaque session token — `Bearer <sid>`.')
+})
+
+export const GetMyProfileResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "age": zod.number().nullish(),
+  "educationLevel": zod.string(),
+  "fieldOfStudy": zod.string().nullish(),
+  "workExperience": zod.string().nullish(),
+  "skills": zod.string().nullish(),
+  "interests": zod.string().nullish(),
+  "goals": zod.string().nullish(),
+  "conversationId": zod.number().nullish(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
  * @summary Get a profile by ID
  */
 export const GetProfileParams = zod.object({

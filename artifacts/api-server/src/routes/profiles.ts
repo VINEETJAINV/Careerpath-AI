@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and } from "drizzle-orm";
 import { db } from "@workspace/db";
 import {
   profilesTable,
@@ -17,6 +17,31 @@ import {
 } from "@workspace/api-zod";
 
 const router = Router();
+
+// ── Get current user's profile ──────────────────────────────────────────────
+router.get("/profiles/me", async (req, res) => {
+  if (!req.isAuthenticated()) {
+    res.status(401).json({ error: "Not authenticated" });
+    return;
+  }
+  try {
+    const rows = await db
+      .select()
+      .from(profilesTable)
+      .where(eq(profilesTable.userId, req.user.id))
+      .orderBy(desc(profilesTable.updatedAt))
+      .limit(1);
+
+    if (!rows[0]) {
+      res.status(404).json({ error: "No profile found" });
+      return;
+    }
+    res.json(rows[0]);
+  } catch (err) {
+    req.log.error({ err }, "Failed to get my profile");
+    res.status(500).json({ error: "Failed to get profile" });
+  }
+});
 
 router.get("/profiles", async (req, res) => {
   try {
