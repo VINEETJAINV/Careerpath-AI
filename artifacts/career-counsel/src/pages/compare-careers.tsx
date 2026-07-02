@@ -38,17 +38,11 @@ export default function CompareCareers() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: comparison, isLoading: isLoadingComparison } = useGetCareerComparison(id, {
-    query: { enabled: !!id },
-  });
+  const { data: comparison, isLoading: isLoadingComparison } = useGetCareerComparison(id);
 
-  const { data: suggestions } = useGetCareerSuggestions(id, {
-    query: { enabled: !!id },
-  });
+  const { data: suggestions } = useGetCareerSuggestions(id);
 
-  const { data: followed } = useGetFollowedCareers(id, {
-    query: { enabled: !!id },
-  });
+  const { data: followed } = useGetFollowedCareers(id);
 
   const follow = useFollowCareer();
   const unfollow = useUnfollowCareer();

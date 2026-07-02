@@ -13,6 +13,15 @@ import {
   Sparkles,
 } from "lucide-react";
 
+function LoginLink() {
+  const { login } = useAuth();
+  return (
+    <button onClick={login} className="text-primary hover:underline font-medium">
+      Log in to your dashboard
+    </button>
+  );
+}
+
 export default function Landing() {
   const { isAuthenticated, isLoading } = useAuth();
   const [, setLocation] = useLocation();
@@ -23,6 +32,11 @@ export default function Landing() {
       setLocation("/dashboard");
     }
   }, [isLoading, isAuthenticated, setLocation]);
+
+  // Scroll to top on mount
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   return (
     <AppLayout>
@@ -47,10 +61,7 @@ export default function Landing() {
               </Link>
             </div>
             <p className="text-sm text-muted-foreground">
-              Already have an account?{" "}
-              <Link href="/login" className="text-primary hover:underline">
-                Log in to your dashboard
-              </Link>
+              Already have an account? <LoginLink />
             </p>
           </div>
         </section>

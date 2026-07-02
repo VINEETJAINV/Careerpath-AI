@@ -51,7 +51,8 @@ export default function NewProfile() {
           title: "Profile created",
           description: "Welcome to CareerPath AI.",
         });
-        setLocation(`/profile/${profile.id}`);
+        localStorage.setItem("lastProfileId", String(profile.id));
+        setLocation("/dashboard");
       },
       onError: () => {
         toast({

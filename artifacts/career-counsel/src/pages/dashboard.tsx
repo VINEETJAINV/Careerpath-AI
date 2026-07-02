@@ -45,22 +45,13 @@ export default function Dashboard() {
   // Get the user's profile from auth context
   const [profileId, setProfileId] = useState<number | null>(null);
 
-  const { data: summary, isLoading: isLoadingSummary } = useGetProfileSummary(profileId ?? 0, {
-    query: { enabled: !!profileId },
-  });
+  const { data: summary, isLoading: isLoadingSummary } = useGetProfileSummary(profileId ?? 0);
 
-  const { data: followedCareers, isLoading: isLoadingCareers } = useGetFollowedCareers(
-    profileId ?? 0,
-    { query: { enabled: !!profileId } }
-  );
+  const { data: followedCareers, isLoading: isLoadingCareers } = useGetFollowedCareers(profileId ?? 0);
 
-  const { data: progress } = useGetRoadmapProgress(profileId ?? 0, {
-    query: { enabled: !!profileId },
-  });
+  const { data: progress } = useGetRoadmapProgress(profileId ?? 0);
 
-  const { data: suggestions } = useGetCareerSuggestions(profileId ?? 0, {
-    query: { enabled: !!profileId },
-  });
+  const { data: suggestions } = useGetCareerSuggestions(profileId ?? 0);
 
   const createAssessment = useCreateAssessment();
 
