@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogOut, User } from "lucide-react";
+import { LogOut, User, LayoutDashboard, Trophy, BarChart3 } from "lucide-react";
 
 export function Navbar() {
   const { user, isLoading, isAuthenticated, login, logout } = useAuth();
@@ -20,12 +20,26 @@ export function Navbar() {
         <Link href="/" className="flex items-center gap-2">
           <span className="font-display text-xl font-bold tracking-tight text-primary">CareerPath AI</span>
         </Link>
-        <nav className="flex items-center gap-4">
+        <nav className="flex items-center gap-2 md:gap-4">
+          {isAuthenticated && (
+            <>
+              <Link href="/dashboard">
+                <Button variant="ghost" size="sm" className="hidden md:inline-flex font-medium" data-testid="nav-dashboard">
+                  Dashboard
+                </Button>
+              </Link>
+              <Link href="/compare-careers">
+                <Button variant="ghost" size="sm" className="hidden md:inline-flex font-medium" data-testid="nav-compare">
+                  Compare
+                </Button>
+              </Link>
+            </>
+          )}
           <Link href="/community">
-            <Button variant="ghost" className="font-medium" data-testid="nav-community">Community</Button>
+            <Button variant="ghost" size="sm" className="font-medium" data-testid="nav-community">Community</Button>
           </Link>
           <Link href="/chat">
-            <Button variant="ghost" className="font-medium" data-testid="nav-chat">Coaching</Button>
+            <Button variant="ghost" size="sm" className="hidden md:inline-flex font-medium" data-testid="nav-chat">Coaching</Button>
           </Link>
           {!isLoading && (
             isAuthenticated && user ? (
@@ -50,6 +64,22 @@ export function Navbar() {
                   </div>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
+                    <Link href="/dashboard">
+                      <LayoutDashboard className="h-4 w-4 mr-2" />Dashboard
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/compare-careers">
+                      <BarChart3 className="h-4 w-4 mr-2" />Compare Careers
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/community/leaderboard">
+                      <Trophy className="h-4 w-4 mr-2" />Leaderboard
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
                     <Link href="/profile/new">
                       <User className="h-4 w-4 mr-2" />New Profile
                     </Link>
@@ -62,11 +92,11 @@ export function Navbar() {
               </DropdownMenu>
             ) : (
               <div className="flex items-center gap-2">
-                <Button variant="ghost" className="font-medium" onClick={login} data-testid="nav-login">
+                <Button variant="ghost" size="sm" className="font-medium" onClick={login} data-testid="nav-login">
                   Log In
                 </Button>
                 <Link href="/profile/new">
-                  <Button variant="default" className="font-medium" data-testid="nav-new-profile">Get Started</Button>
+                  <Button size="sm" variant="default" className="font-medium" data-testid="nav-new-profile">Get Started</Button>
                 </Link>
               </div>
             )

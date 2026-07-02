@@ -1,0 +1,444 @@
+You are acting as the Product Manager, UX Designer, and Senior Full Stack Engineer responsible for the next major release of CareerPath AI.
+
+Your goal is NOT to redesign the application from scratch.
+
+Your goal is to evolve the existing MVP into a product that users can continuously return to while also making the GitHub repository portfolio-quality for Product Management recruiters.
+
+Do not remove existing functionality.
+
+Maintain backwards compatibility wherever possible.
+
+====================================
+PART 1 — Product Flow Improvements
+====================================
+
+After testing the application, I identified a major product issue.
+
+Currently users can generate career recommendations, roadmaps and learning resources, but they are not easily accessible after logging in again.
+
+This makes the product feel like a one-time AI tool rather than a long-term career platform.
+
+Redesign the user journey.
+
+Current Flow
+
+Landing
+↓
+
+Assessment
+↓
+
+AI Results
+↓
+
+Session Ends
+
+Desired Flow
+
+Landing
+↓
+
+Login / Sign Up
+↓
+
+Create Profile
+
+↓
+
+Dashboard
+
+↓
+
+Career Assessment
+
+↓
+
+Career Recommendations
+
+↓
+
+Follow Career Paths
+
+↓
+
+Roadmaps
+
+↓
+
+Progress Tracking
+
+↓
+
+Return Anytime
+
+====================================
+Authentication
+====================================
+
+Authentication should become the first meaningful step.
+
+If a user is not authenticated:
+
+- Encourage login/signup before beginning the assessment.
+
+If authenticated:
+
+- Redirect directly to the personal dashboard.
+
+Users should never lose AI-generated content because of session changes.
+
+====================================
+Persistent Dashboard
+====================================
+
+Create a true user dashboard.
+
+The dashboard should always display:
+
+- Current profile
+- Career readiness summary
+- Followed career paths
+- Progress overview
+- Current roadmap phase
+- Recently completed milestones
+- Continue Learning
+- AI Coach shortcut
+- Assessment status
+
+The dashboard should become the home page after login.
+
+====================================
+Persistent User Data
+====================================
+
+Store and load all generated content from the authenticated user's account.
+
+Persist:
+
+- Assessment answers
+- Career recommendations
+- Roadmaps
+- Learning resources
+- AI conversations
+- Milestone progress
+- Community activity
+
+Users should never have to regenerate content they have already created.
+
+====================================
+Multiple Career Paths
+====================================
+
+Currently only the top recommendation becomes a roadmap.
+
+Redesign this.
+
+Users should be able to follow multiple careers.
+
+Each followed career should have:
+
+- Independent roadmap
+- Independent milestones
+- Independent learning resources
+- Independent progress
+- Independent AI context
+
+Limit active careers to 3.
+
+One should be Primary.
+
+The others should be Secondary.
+
+Allow users to archive or unfollow careers.
+
+====================================
+Career Comparison
+====================================
+
+Add a Compare Careers page.
+
+Users can compare followed careers using:
+
+Compatibility
+
+Required Skills
+
+Learning Difficulty
+
+Estimated Timeline
+
+Salary Range
+
+Industry Growth
+
+Pros
+
+Cons
+
+Recommended Certifications
+
+====================================
+Roadmap Improvements
+====================================
+
+Every roadmap milestone should support:
+
+Not Started
+
+In Progress
+
+Completed
+
+Completion Date
+
+Progress %
+
+Milestones should automatically update overall roadmap completion.
+
+====================================
+Learning Resources
+====================================
+
+Learning resources should become interactive.
+
+Allow users to:
+
+Bookmark
+
+Mark Complete
+
+Save Notes
+
+Track Completion
+
+Display completion progress.
+
+====================================
+AI Coach
+====================================
+
+The AI Coach should understand which career the user is discussing.
+
+If multiple careers exist, allow users to switch context.
+
+Reuse previous conversations.
+
+====================================
+Community
+====================================
+
+If users complete milestones they can optionally share updates.
+
+Respect privacy settings.
+
+Public users appear in Community.
+
+Private users never appear.
+
+====================================
+Future Product Foundation
+====================================
+
+Refactor where necessary to support future features like:
+
+Resume Analysis
+
+Job Tracker
+
+Interview Preparation
+
+Daily Career Tasks
+
+Weekly AI Check-ins
+
+Email Notifications
+
+Do not necessarily build these features now.
+
+Just ensure the architecture supports them.
+
+====================================
+PART 2 — UX Improvements
+====================================
+
+Improve usability without redesigning the application's visual identity.
+
+Reduce unnecessary clicks.
+
+Improve navigation.
+
+Improve dashboard organization.
+
+Improve empty states.
+
+Improve loading states.
+
+Improve error handling.
+
+Improve mobile responsiveness.
+
+Keep the interface clean and modern.
+
+====================================
+PART 3 — GitHub Improvements
+====================================
+
+Update all project documentation to reflect the new functionality.
+
+Update:
+
+README.md
+
+PROJECT_OVERVIEW.md
+
+CHANGELOG.md
+
+ROADMAP.md
+
+If PRODUCT_CASE_STUDY.md does not exist, create it.
+
+====================================
+README
+====================================
+
+Update the README with:
+
+New user flow
+
+Dashboard screenshots (placeholders if necessary)
+
+Multiple Career Paths
+
+Progress Tracking
+
+Persistent Learning
+
+Career Comparison
+
+Updated feature list
+
+Updated architecture
+
+Updated roadmap
+
+====================================
+PROJECT_OVERVIEW
+====================================
+
+Update workflows to include:
+
+Authentication
+
+Dashboard
+
+Persistent storage
+
+Multiple career paths
+
+Progress tracking
+
+Career comparison
+
+Explain product decisions behind every feature.
+
+====================================
+PRODUCT_CASE_STUDY
+====================================
+
+Create or update a Product Case Study including:
+
+Problem Statement
+
+Market Opportunity
+
+Target Users
+
+Personas
+
+Competitive Analysis
+
+Product Vision
+
+MVP Scope
+
+Feature Prioritization
+
+Trade-offs
+
+Key Product Decisions
+
+North Star Metric
+
+Success Metrics
+
+Future Roadmap
+
+Lessons Learned
+
+This document should read like something presented during a Product Management interview.
+
+====================================
+Metrics
+====================================
+
+Define product metrics including:
+
+Activation Rate
+
+Assessment Completion
+
+Career Follow Rate
+
+Roadmap Completion
+
+Learning Completion
+
+Weekly Active Users
+
+Retention
+
+Average Session Length
+
+AI Coach Usage
+
+Community Engagement
+
+North Star Metric
+
+Explain why each metric matters.
+
+====================================
+Code Quality
+====================================
+
+Refactor only where necessary.
+
+Keep code modular.
+
+Do not break existing functionality.
+
+Remove dead code if discovered.
+
+Document complex logic.
+
+====================================
+Final Validation
+====================================
+
+Before finishing:
+
+Ensure existing functionality still works.
+
+Verify migrations if database changes are required.
+
+Verify returning users can access all previous data.
+
+Ensure documentation matches the application.
+
+====================================
+Goal
+====================================
+
+The final result should feel less like an AI recommendation website and more like an AI-powered Career Growth Platform that users return to over weeks and months.
+
+It should be polished enough to showcase on GitHub, discuss during Product Management interviews, and include as a flagship resume project demonstrating product thinking, user-centric design, prioritization, and end-to-end execution.

@@ -208,7 +208,7 @@ paths:
     put:
       operationId: updateRoadmapProgress
       tags: [community]
-      summary: Toggle a roadmap milestone as complete or incomplete
+      summary: Update a roadmap milestone (status, percent, notes, or completed)
       parameters:
         - name: id
           in: path
@@ -483,6 +483,180 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiError"
+
+  /profiles/{id}/followed-careers:
+    get:
+      operationId: getFollowedCareers
+      tags: [careers]
+      summary: Get followed career paths for a profile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of followed careers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FollowedCareer"
+    post:
+      operationId: followCareer
+      tags: [careers]
+      summary: Follow a career path (max 3 active)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - $ref: '#/components/parameters/AuthorizationSessionHeader'
+        - $ref: '#/components/parameters/SessionCookie'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FollowedCareerInput"
+      responses:
+        "201":
+          description: Career followed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FollowedCareer"
+        "400":
+          description: Max 3 active careers reached
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /profiles/{id}/followed-careers/{careerId}:
+    delete:
+      operationId: unfollowCareer
+      tags: [careers]
+      summary: Unfollow or archive a career path
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: careerId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - $ref: '#/components/parameters/AuthorizationSessionHeader'
+        - $ref: '#/components/parameters/SessionCookie'
+      responses:
+        "200":
+          description: Career unfollowed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiSuccess"
+    put:
+      operationId: updateFollowedCareer
+      tags: [careers]
+      summary: Set primary or change status of a followed career
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: careerId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - $ref: '#/components/parameters/AuthorizationSessionHeader'
+        - $ref: '#/components/parameters/SessionCookie'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FollowedCareerStatusInput"
+      responses:
+        "200":
+          description: Career updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FollowedCareer"
+
+  /profiles/{id}/compare-careers:
+    get:
+      operationId: getCareerComparison
+      tags: [careers]
+      summary: Compare followed careers side-by-side
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Career comparison data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CareerComparison"
+
+  /community/leaderboard:
+    get:
+      operationId: getLeaderboard
+      tags: [community]
+      summary: Ranked community members by progress
+      responses:
+        "200":
+          description: Leaderboard entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LeaderboardEntry"
+
+  /profiles/{id}/resources/{resourceId}/progress:
+    put:
+      operationId: updateResourceProgress
+      tags: [community]
+      summary: Track resource completion, bookmark, or notes
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: resourceId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - $ref: '#/components/parameters/AuthorizationSessionHeader'
+        - $ref: '#/components/parameters/SessionCookie'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResourceProgressUpdate"
+      responses:
+        "200":
+          description: Progress updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResourceProgress"
 
   /healthz:
     get:
@@ -1605,8 +1779,21 @@ components:
           type: integer
         completed:
           type: boolean
+        status:
+          type: string
+          enum: [not_started, in_progress, completed]
+        progressPercent:
+          type: integer
+        notes:
+          type: ["string", "null"]
         completedAt:
           type: ["string", "null"]
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
           format: date-time
       required:
         - id
@@ -1615,6 +1802,8 @@ components:
         - milestoneIndex
         - phaseIndex
         - completed
+        - status
+        - progressPercent
 
     ProgressUpdate:
       type: object
@@ -1627,6 +1816,13 @@ components:
           type: integer
         completed:
           type: boolean
+        status:
+          type: string
+          enum: [not_started, in_progress, completed]
+        progressPercent:
+          type: integer
+        notes:
+          type: string
       required:
         - careerTitle
         - milestoneIndex
@@ -1816,3 +2012,166 @@ components:
           type: boolean
       required:
         - success
+
+    FollowedCareer:
+      type: object
+      properties:
+        id:
+          type: integer
+        profileId:
+          type: integer
+        careerSuggestionId:
+          type: integer
+        careerTitle:
+          type: string
+        isPrimary:
+          type: integer
+        status:
+          type: string
+        followedAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - profileId
+        - careerSuggestionId
+        - careerTitle
+        - isPrimary
+        - status
+        - followedAt
+        - createdAt
+
+    FollowedCareerInput:
+      type: object
+      properties:
+        careerSuggestionId:
+          type: integer
+        careerTitle:
+          type: string
+      required:
+        - careerSuggestionId
+        - careerTitle
+
+    FollowedCareerStatusInput:
+      type: object
+      properties:
+        isPrimary:
+          type: integer
+        status:
+          type: string
+          enum: [active, archived]
+      required:
+        - isPrimary
+        - status
+
+    CareerComparison:
+      type: object
+      properties:
+        careers:
+          type: array
+          items:
+            type: object
+            properties:
+              careerTitle:
+                type: string
+              compatibilityScore:
+                type: integer
+              requiredSkills:
+                type: array
+                items:
+                  type: string
+              learningDifficulty:
+                type: string
+              estimatedTimeline:
+                type: string
+              salaryRange:
+                type: string
+              industryGrowth:
+                type: string
+              pros:
+                type: array
+                items:
+                  type: string
+              cons:
+                type: array
+                items:
+                  type: string
+              recommendedCertifications:
+                type: array
+                items:
+                  type: string
+              status:
+                type: string
+              isPrimary:
+                type: integer
+            required:
+              - careerTitle
+              - compatibilityScore
+
+    LeaderboardEntry:
+      type: object
+      properties:
+        rank:
+          type: integer
+        profileId:
+          type: integer
+        name:
+          type: string
+        topCareer:
+          type: ["string", "null"]
+        roadmapCompletion:
+          type: integer
+        skillsTested:
+          type: integer
+        totalScore:
+          type: integer
+        isPublic:
+          type: integer
+      required:
+        - rank
+        - profileId
+        - name
+        - roadmapCompletion
+        - skillsTested
+        - totalScore
+
+    ResourceProgress:
+      type: object
+      properties:
+        id:
+          type: integer
+        profileId:
+          type: integer
+        resourceId:
+          type: integer
+        status:
+          type: string
+          enum: [not_started, in_progress, completed]
+        notes:
+          type: ["string", "null"]
+        completedAt:
+          type: ["string", "null"]
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - profileId
+        - resourceId
+        - status
+        - createdAt
+
+    ResourceProgressUpdate:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [not_started, in_progress, completed]
+        notes:
+          type: string
+      required:
+        - status

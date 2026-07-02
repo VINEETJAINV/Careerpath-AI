@@ -29,15 +29,20 @@ import type {
   AssessmentWithQuestions,
   AuthUserEnvelope,
   BeginBrowserLoginParams,
+  CareerComparison,
   CareerRoadmap,
   CareerSuggestion,
   CommunityInsights,
   CommunityMember,
+  FollowedCareer,
+  FollowedCareerInput,
+  FollowedCareerStatusInput,
   GetCareerRoadmapParams,
   GetCommunityInsightsParams,
   GetRoadmapProgressParams,
   HandleBrowserLoginCallbackParams,
   HealthStatus,
+  LeaderboardEntry,
   LearningResource,
   OpenaiConversation,
   OpenaiConversationInput,
@@ -57,6 +62,8 @@ import type {
   ProgressPostInput,
   ProgressUpdate,
   PublicProfile,
+  ResourceProgress,
+  ResourceProgressUpdate,
   SkillInput,
   SkillTestResult,
   SkillTestSubmission,
@@ -799,7 +806,7 @@ export const getUpdateRoadmapProgressUrl = (id: number,) => {
 }
 
 /**
- * @summary Toggle a roadmap milestone as complete or incomplete
+ * @summary Update a roadmap milestone (status, percent, notes, or completed)
  */
 export const updateRoadmapProgress = async (id: number,
     progressUpdate: ProgressUpdate, options?: RequestInit): Promise<ProgressEntry> => {
@@ -849,7 +856,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type UpdateRoadmapProgressMutationError = ErrorType<unknown>
 
     /**
- * @summary Toggle a roadmap milestone as complete or incomplete
+ * @summary Update a roadmap milestone (status, percent, notes, or completed)
  */
 export const useUpdateRoadmapProgress = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateRoadmapProgress>>, TError,{id: number;data: BodyType<ProgressUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
@@ -1612,6 +1619,529 @@ export const useCreateProgressPost = <TError = ErrorType<ApiError>,
         TContext
       > => {
       return useMutation(getCreateProgressPostMutationOptions(options));
+    }
+
+export const getGetFollowedCareersUrl = (id: number,) => {
+
+
+
+
+  return `/api/profiles/${id}/followed-careers`
+}
+
+/**
+ * @summary Get followed career paths for a profile
+ */
+export const getFollowedCareers = async (id: number, options?: RequestInit): Promise<FollowedCareer[]> => {
+
+  return customFetch<FollowedCareer[]>(getGetFollowedCareersUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetFollowedCareersQueryKey = (id: number,) => {
+    return [
+    `/api/profiles/${id}/followed-careers`
+    ] as const;
+    }
+
+
+export const getGetFollowedCareersQueryOptions = <TData = Awaited<ReturnType<typeof getFollowedCareers>>, TError = ErrorType<unknown>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getFollowedCareers>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetFollowedCareersQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getFollowedCareers>>> = ({ signal }) => getFollowedCareers(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(id), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getFollowedCareers>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetFollowedCareersQueryResult = NonNullable<Awaited<ReturnType<typeof getFollowedCareers>>>
+export type GetFollowedCareersQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Get followed career paths for a profile
+ */
+
+export function useGetFollowedCareers<TData = Awaited<ReturnType<typeof getFollowedCareers>>, TError = ErrorType<unknown>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getFollowedCareers>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetFollowedCareersQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getFollowCareerUrl = (id: number,) => {
+
+
+
+
+  return `/api/profiles/${id}/followed-careers`
+}
+
+/**
+ * @summary Follow a career path (max 3 active)
+ */
+export const followCareer = async (id: number,
+    followedCareerInput: FollowedCareerInput, options?: RequestInit): Promise<FollowedCareer> => {
+
+  return customFetch<FollowedCareer>(getFollowCareerUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      followedCareerInput,)
+  }
+);}
+
+
+
+
+export const getFollowCareerMutationOptions = <TError = ErrorType<ApiError>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof followCareer>>, TError,{id: number;data: BodyType<FollowedCareerInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof followCareer>>, TError,{id: number;data: BodyType<FollowedCareerInput>}, TContext> => {
+
+const mutationKey = ['followCareer'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof followCareer>>, {id: number;data: BodyType<FollowedCareerInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  followCareer(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type FollowCareerMutationResult = NonNullable<Awaited<ReturnType<typeof followCareer>>>
+    export type FollowCareerMutationBody = BodyType<FollowedCareerInput>
+    export type FollowCareerMutationError = ErrorType<ApiError>
+
+    /**
+ * @summary Follow a career path (max 3 active)
+ */
+export const useFollowCareer = <TError = ErrorType<ApiError>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof followCareer>>, TError,{id: number;data: BodyType<FollowedCareerInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof followCareer>>,
+        TError,
+        {id: number;data: BodyType<FollowedCareerInput>},
+        TContext
+      > => {
+      return useMutation(getFollowCareerMutationOptions(options));
+    }
+
+export const getUnfollowCareerUrl = (id: number,
+    careerId: number,) => {
+
+
+
+
+  return `/api/profiles/${id}/followed-careers/${careerId}`
+}
+
+/**
+ * @summary Unfollow or archive a career path
+ */
+export const unfollowCareer = async (id: number,
+    careerId: number, options?: RequestInit): Promise<ApiSuccess> => {
+
+  return customFetch<ApiSuccess>(getUnfollowCareerUrl(id,careerId),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getUnfollowCareerMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof unfollowCareer>>, TError,{id: number;careerId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof unfollowCareer>>, TError,{id: number;careerId: number}, TContext> => {
+
+const mutationKey = ['unfollowCareer'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof unfollowCareer>>, {id: number;careerId: number}> = (props) => {
+          const {id,careerId} = props ?? {};
+
+          return  unfollowCareer(id,careerId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UnfollowCareerMutationResult = NonNullable<Awaited<ReturnType<typeof unfollowCareer>>>
+
+    export type UnfollowCareerMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Unfollow or archive a career path
+ */
+export const useUnfollowCareer = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof unfollowCareer>>, TError,{id: number;careerId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof unfollowCareer>>,
+        TError,
+        {id: number;careerId: number},
+        TContext
+      > => {
+      return useMutation(getUnfollowCareerMutationOptions(options));
+    }
+
+export const getUpdateFollowedCareerUrl = (id: number,
+    careerId: number,) => {
+
+
+
+
+  return `/api/profiles/${id}/followed-careers/${careerId}`
+}
+
+/**
+ * @summary Set primary or change status of a followed career
+ */
+export const updateFollowedCareer = async (id: number,
+    careerId: number,
+    followedCareerStatusInput: FollowedCareerStatusInput, options?: RequestInit): Promise<FollowedCareer> => {
+
+  return customFetch<FollowedCareer>(getUpdateFollowedCareerUrl(id,careerId),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      followedCareerStatusInput,)
+  }
+);}
+
+
+
+
+export const getUpdateFollowedCareerMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateFollowedCareer>>, TError,{id: number;careerId: number;data: BodyType<FollowedCareerStatusInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateFollowedCareer>>, TError,{id: number;careerId: number;data: BodyType<FollowedCareerStatusInput>}, TContext> => {
+
+const mutationKey = ['updateFollowedCareer'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateFollowedCareer>>, {id: number;careerId: number;data: BodyType<FollowedCareerStatusInput>}> = (props) => {
+          const {id,careerId,data} = props ?? {};
+
+          return  updateFollowedCareer(id,careerId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateFollowedCareerMutationResult = NonNullable<Awaited<ReturnType<typeof updateFollowedCareer>>>
+    export type UpdateFollowedCareerMutationBody = BodyType<FollowedCareerStatusInput>
+    export type UpdateFollowedCareerMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Set primary or change status of a followed career
+ */
+export const useUpdateFollowedCareer = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateFollowedCareer>>, TError,{id: number;careerId: number;data: BodyType<FollowedCareerStatusInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateFollowedCareer>>,
+        TError,
+        {id: number;careerId: number;data: BodyType<FollowedCareerStatusInput>},
+        TContext
+      > => {
+      return useMutation(getUpdateFollowedCareerMutationOptions(options));
+    }
+
+export const getGetCareerComparisonUrl = (id: number,) => {
+
+
+
+
+  return `/api/profiles/${id}/compare-careers`
+}
+
+/**
+ * @summary Compare followed careers side-by-side
+ */
+export const getCareerComparison = async (id: number, options?: RequestInit): Promise<CareerComparison> => {
+
+  return customFetch<CareerComparison>(getGetCareerComparisonUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetCareerComparisonQueryKey = (id: number,) => {
+    return [
+    `/api/profiles/${id}/compare-careers`
+    ] as const;
+    }
+
+
+export const getGetCareerComparisonQueryOptions = <TData = Awaited<ReturnType<typeof getCareerComparison>>, TError = ErrorType<unknown>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCareerComparison>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetCareerComparisonQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCareerComparison>>> = ({ signal }) => getCareerComparison(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(id), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getCareerComparison>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetCareerComparisonQueryResult = NonNullable<Awaited<ReturnType<typeof getCareerComparison>>>
+export type GetCareerComparisonQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Compare followed careers side-by-side
+ */
+
+export function useGetCareerComparison<TData = Awaited<ReturnType<typeof getCareerComparison>>, TError = ErrorType<unknown>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCareerComparison>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetCareerComparisonQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getGetLeaderboardUrl = () => {
+
+
+
+
+  return `/api/community/leaderboard`
+}
+
+/**
+ * @summary Ranked community members by progress
+ */
+export const getLeaderboard = async ( options?: RequestInit): Promise<LeaderboardEntry[]> => {
+
+  return customFetch<LeaderboardEntry[]>(getGetLeaderboardUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetLeaderboardQueryKey = () => {
+    return [
+    `/api/community/leaderboard`
+    ] as const;
+    }
+
+
+export const getGetLeaderboardQueryOptions = <TData = Awaited<ReturnType<typeof getLeaderboard>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLeaderboard>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetLeaderboardQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getLeaderboard>>> = ({ signal }) => getLeaderboard({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getLeaderboard>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetLeaderboardQueryResult = NonNullable<Awaited<ReturnType<typeof getLeaderboard>>>
+export type GetLeaderboardQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Ranked community members by progress
+ */
+
+export function useGetLeaderboard<TData = Awaited<ReturnType<typeof getLeaderboard>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLeaderboard>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetLeaderboardQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getUpdateResourceProgressUrl = (id: number,
+    resourceId: number,) => {
+
+
+
+
+  return `/api/profiles/${id}/resources/${resourceId}/progress`
+}
+
+/**
+ * @summary Track resource completion, bookmark, or notes
+ */
+export const updateResourceProgress = async (id: number,
+    resourceId: number,
+    resourceProgressUpdate: ResourceProgressUpdate, options?: RequestInit): Promise<ResourceProgress> => {
+
+  return customFetch<ResourceProgress>(getUpdateResourceProgressUrl(id,resourceId),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      resourceProgressUpdate,)
+  }
+);}
+
+
+
+
+export const getUpdateResourceProgressMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateResourceProgress>>, TError,{id: number;resourceId: number;data: BodyType<ResourceProgressUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateResourceProgress>>, TError,{id: number;resourceId: number;data: BodyType<ResourceProgressUpdate>}, TContext> => {
+
+const mutationKey = ['updateResourceProgress'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateResourceProgress>>, {id: number;resourceId: number;data: BodyType<ResourceProgressUpdate>}> = (props) => {
+          const {id,resourceId,data} = props ?? {};
+
+          return  updateResourceProgress(id,resourceId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateResourceProgressMutationResult = NonNullable<Awaited<ReturnType<typeof updateResourceProgress>>>
+    export type UpdateResourceProgressMutationBody = BodyType<ResourceProgressUpdate>
+    export type UpdateResourceProgressMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Track resource completion, bookmark, or notes
+ */
+export const useUpdateResourceProgress = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateResourceProgress>>, TError,{id: number;resourceId: number;data: BodyType<ResourceProgressUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateResourceProgress>>,
+        TError,
+        {id: number;resourceId: number;data: BodyType<ResourceProgressUpdate>},
+        TContext
+      > => {
+      return useMutation(getUpdateResourceProgressMutationOptions(options));
     }
 
 export const getHealthCheckUrl = () => {

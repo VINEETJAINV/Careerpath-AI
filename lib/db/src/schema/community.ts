@@ -6,9 +6,13 @@ export const roadmapProgressTable = pgTable("roadmap_progress", {
   careerTitle: text("career_title").notNull(),
   milestoneIndex: integer("milestone_index").notNull(),
   phaseIndex: integer("phase_index").notNull(),
-  completed: integer("completed").notNull().default(0),
+  status: text("status").notNull().default("not_started"), // not_started | in_progress | completed
+  progressPercent: integer("progress_percent").notNull().default(0),
+  completed: integer("completed").notNull().default(0), // legacy — 1 when status=completed
   completedAt: timestamp("completed_at"),
+  notes: text("notes"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
 export const profileCommentsTable = pgTable("profile_comments", {
@@ -46,6 +50,17 @@ export const learningResourcesTable = pgTable("learning_resources", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+export const userResourceProgressTable = pgTable("user_resource_progress", {
+  id: serial("id").primaryKey(),
+  profileId: integer("profile_id").notNull(),
+  resourceId: integer("resource_id").notNull(),
+  status: text("status").notNull().default("not_started"), // not_started | in_progress | completed
+  notes: text("notes"),
+  completedAt: timestamp("completed_at"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
 export const progressPostsTable = pgTable("progress_posts", {
   id: serial("id").primaryKey(),
   profileId: integer("profile_id").notNull(),
@@ -60,4 +75,5 @@ export type RoadmapProgress = typeof roadmapProgressTable.$inferSelect;
 export type ProfileComment = typeof profileCommentsTable.$inferSelect;
 export type UserSkill = typeof userSkillsTable.$inferSelect;
 export type LearningResource = typeof learningResourcesTable.$inferSelect;
+export type UserResourceProgress = typeof userResourceProgressTable.$inferSelect;
 export type ProgressPost = typeof progressPostsTable.$inferSelect;

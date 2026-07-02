@@ -299,6 +299,15 @@ export interface CommunityMember {
   createdAt: string;
 }
 
+export type ProgressEntryStatus = typeof ProgressEntryStatus[keyof typeof ProgressEntryStatus];
+
+
+export const ProgressEntryStatus = {
+  not_started: 'not_started',
+  in_progress: 'in_progress',
+  completed: 'completed',
+} as const;
+
 export interface ProgressEntry {
   id: number;
   profileId: number;
@@ -306,8 +315,14 @@ export interface ProgressEntry {
   milestoneIndex: number;
   phaseIndex: number;
   completed: boolean;
+  status: ProgressEntryStatus;
+  progressPercent: number;
+  /** @nullable */
+  notes?: string | null;
   /** @nullable */
   completedAt?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface UserSkill {
@@ -359,11 +374,23 @@ export interface ProfileCommentInput {
   content: string;
 }
 
+export type ProgressUpdateStatus = typeof ProgressUpdateStatus[keyof typeof ProgressUpdateStatus];
+
+
+export const ProgressUpdateStatus = {
+  not_started: 'not_started',
+  in_progress: 'in_progress',
+  completed: 'completed',
+} as const;
+
 export interface ProgressUpdate {
   careerTitle: string;
   milestoneIndex: number;
   phaseIndex: number;
   completed: boolean;
+  status?: ProgressUpdateStatus;
+  progressPercent?: number;
+  notes?: string;
 }
 
 export interface SkillInput {
@@ -449,6 +476,101 @@ export interface PrivacyInput {
 
 export interface ApiSuccess {
   success: boolean;
+}
+
+export interface FollowedCareer {
+  id: number;
+  profileId: number;
+  careerSuggestionId: number;
+  careerTitle: string;
+  isPrimary: number;
+  status: string;
+  followedAt: string;
+  createdAt: string;
+}
+
+export interface FollowedCareerInput {
+  careerSuggestionId: number;
+  careerTitle: string;
+}
+
+export type FollowedCareerStatusInputStatus = typeof FollowedCareerStatusInputStatus[keyof typeof FollowedCareerStatusInputStatus];
+
+
+export const FollowedCareerStatusInputStatus = {
+  active: 'active',
+  archived: 'archived',
+} as const;
+
+export interface FollowedCareerStatusInput {
+  isPrimary: number;
+  status: FollowedCareerStatusInputStatus;
+}
+
+export type CareerComparisonCareersItem = {
+  careerTitle: string;
+  compatibilityScore: number;
+  requiredSkills?: string[];
+  learningDifficulty?: string;
+  estimatedTimeline?: string;
+  salaryRange?: string;
+  industryGrowth?: string;
+  pros?: string[];
+  cons?: string[];
+  recommendedCertifications?: string[];
+  status?: string;
+  isPrimary?: number;
+};
+
+export interface CareerComparison {
+  careers?: CareerComparisonCareersItem[];
+}
+
+export interface LeaderboardEntry {
+  rank: number;
+  profileId: number;
+  name: string;
+  /** @nullable */
+  topCareer?: string | null;
+  roadmapCompletion: number;
+  skillsTested: number;
+  totalScore: number;
+  isPublic?: number;
+}
+
+export type ResourceProgressStatus = typeof ResourceProgressStatus[keyof typeof ResourceProgressStatus];
+
+
+export const ResourceProgressStatus = {
+  not_started: 'not_started',
+  in_progress: 'in_progress',
+  completed: 'completed',
+} as const;
+
+export interface ResourceProgress {
+  id: number;
+  profileId: number;
+  resourceId: number;
+  status: ResourceProgressStatus;
+  /** @nullable */
+  notes?: string | null;
+  /** @nullable */
+  completedAt?: string | null;
+  createdAt: string;
+}
+
+export type ResourceProgressUpdateStatus = typeof ResourceProgressUpdateStatus[keyof typeof ResourceProgressUpdateStatus];
+
+
+export const ResourceProgressUpdateStatus = {
+  not_started: 'not_started',
+  in_progress: 'in_progress',
+  completed: 'completed',
+} as const;
+
+export interface ResourceProgressUpdate {
+  status: ResourceProgressUpdateStatus;
+  notes?: string;
 }
 
 /**

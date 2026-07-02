@@ -105,7 +105,12 @@ export const GetPublicProfileResponse = zod.object({
   "milestoneIndex": zod.number(),
   "phaseIndex": zod.number(),
   "completed": zod.boolean(),
-  "completedAt": zod.coerce.date().nullish()
+  "status": zod.enum(['not_started', 'in_progress', 'completed']),
+  "progressPercent": zod.number(),
+  "notes": zod.string().nullish(),
+  "completedAt": zod.coerce.date().nullish(),
+  "createdAt": zod.coerce.date().optional(),
+  "updatedAt": zod.coerce.date().optional()
 })),
   "skills": zod.array(zod.object({
   "id": zod.number(),
@@ -174,13 +179,18 @@ export const GetRoadmapProgressResponseItem = zod.object({
   "milestoneIndex": zod.number(),
   "phaseIndex": zod.number(),
   "completed": zod.boolean(),
-  "completedAt": zod.coerce.date().nullish()
+  "status": zod.enum(['not_started', 'in_progress', 'completed']),
+  "progressPercent": zod.number(),
+  "notes": zod.string().nullish(),
+  "completedAt": zod.coerce.date().nullish(),
+  "createdAt": zod.coerce.date().optional(),
+  "updatedAt": zod.coerce.date().optional()
 })
 export const GetRoadmapProgressResponse = zod.array(GetRoadmapProgressResponseItem)
 
 
 /**
- * @summary Toggle a roadmap milestone as complete or incomplete
+ * @summary Update a roadmap milestone (status, percent, notes, or completed)
  */
 export const UpdateRoadmapProgressParams = zod.object({
   "id": zod.coerce.number()
@@ -194,7 +204,10 @@ export const UpdateRoadmapProgressBody = zod.object({
   "careerTitle": zod.string(),
   "milestoneIndex": zod.number(),
   "phaseIndex": zod.number(),
-  "completed": zod.boolean()
+  "completed": zod.boolean(),
+  "status": zod.enum(['not_started', 'in_progress', 'completed']).optional(),
+  "progressPercent": zod.number().optional(),
+  "notes": zod.string().optional()
 })
 
 export const UpdateRoadmapProgressResponse = zod.object({
@@ -204,7 +217,12 @@ export const UpdateRoadmapProgressResponse = zod.object({
   "milestoneIndex": zod.number(),
   "phaseIndex": zod.number(),
   "completed": zod.boolean(),
-  "completedAt": zod.coerce.date().nullish()
+  "status": zod.enum(['not_started', 'in_progress', 'completed']),
+  "progressPercent": zod.number(),
+  "notes": zod.string().nullish(),
+  "completedAt": zod.coerce.date().nullish(),
+  "createdAt": zod.coerce.date().optional(),
+  "updatedAt": zod.coerce.date().optional()
 })
 
 
@@ -423,6 +441,158 @@ export const CreateProgressPostBody = zod.object({
   "content": zod.string().min(1),
   "postType": zod.enum(['milestone_complete', 'skill_achieved', 'general_update']),
   "metadata": zod.string().optional()
+})
+
+
+/**
+ * @summary Get followed career paths for a profile
+ */
+export const GetFollowedCareersParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const GetFollowedCareersResponseItem = zod.object({
+  "id": zod.number(),
+  "profileId": zod.number(),
+  "careerSuggestionId": zod.number(),
+  "careerTitle": zod.string(),
+  "isPrimary": zod.number(),
+  "status": zod.string(),
+  "followedAt": zod.coerce.date(),
+  "createdAt": zod.coerce.date()
+})
+export const GetFollowedCareersResponse = zod.array(GetFollowedCareersResponseItem)
+
+
+/**
+ * @summary Follow a career path (max 3 active)
+ */
+export const FollowCareerParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const FollowCareerHeader = zod.object({
+  "Authorization": zod.string().optional().describe('Opaque session token — `Bearer <sid>`.')
+})
+
+export const FollowCareerBody = zod.object({
+  "careerSuggestionId": zod.number(),
+  "careerTitle": zod.string()
+})
+
+
+/**
+ * @summary Unfollow or archive a career path
+ */
+export const UnfollowCareerParams = zod.object({
+  "id": zod.coerce.number(),
+  "careerId": zod.coerce.number()
+})
+
+export const UnfollowCareerHeader = zod.object({
+  "Authorization": zod.string().optional().describe('Opaque session token — `Bearer <sid>`.')
+})
+
+export const UnfollowCareerResponse = zod.object({
+  "success": zod.boolean()
+})
+
+
+/**
+ * @summary Set primary or change status of a followed career
+ */
+export const UpdateFollowedCareerParams = zod.object({
+  "id": zod.coerce.number(),
+  "careerId": zod.coerce.number()
+})
+
+export const UpdateFollowedCareerHeader = zod.object({
+  "Authorization": zod.string().optional().describe('Opaque session token — `Bearer <sid>`.')
+})
+
+export const UpdateFollowedCareerBody = zod.object({
+  "isPrimary": zod.number(),
+  "status": zod.enum(['active', 'archived'])
+})
+
+export const UpdateFollowedCareerResponse = zod.object({
+  "id": zod.number(),
+  "profileId": zod.number(),
+  "careerSuggestionId": zod.number(),
+  "careerTitle": zod.string(),
+  "isPrimary": zod.number(),
+  "status": zod.string(),
+  "followedAt": zod.coerce.date(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Compare followed careers side-by-side
+ */
+export const GetCareerComparisonParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const GetCareerComparisonResponse = zod.object({
+  "careers": zod.array(zod.object({
+  "careerTitle": zod.string(),
+  "compatibilityScore": zod.number(),
+  "requiredSkills": zod.array(zod.string()).optional(),
+  "learningDifficulty": zod.string().optional(),
+  "estimatedTimeline": zod.string().optional(),
+  "salaryRange": zod.string().optional(),
+  "industryGrowth": zod.string().optional(),
+  "pros": zod.array(zod.string()).optional(),
+  "cons": zod.array(zod.string()).optional(),
+  "recommendedCertifications": zod.array(zod.string()).optional(),
+  "status": zod.string().optional(),
+  "isPrimary": zod.number().optional()
+})).optional()
+})
+
+
+/**
+ * @summary Ranked community members by progress
+ */
+export const GetLeaderboardResponseItem = zod.object({
+  "rank": zod.number(),
+  "profileId": zod.number(),
+  "name": zod.string(),
+  "topCareer": zod.string().nullish(),
+  "roadmapCompletion": zod.number(),
+  "skillsTested": zod.number(),
+  "totalScore": zod.number(),
+  "isPublic": zod.number().optional()
+})
+export const GetLeaderboardResponse = zod.array(GetLeaderboardResponseItem)
+
+
+/**
+ * @summary Track resource completion, bookmark, or notes
+ */
+export const UpdateResourceProgressParams = zod.object({
+  "id": zod.coerce.number(),
+  "resourceId": zod.coerce.number()
+})
+
+export const UpdateResourceProgressHeader = zod.object({
+  "Authorization": zod.string().optional().describe('Opaque session token — `Bearer <sid>`.')
+})
+
+export const UpdateResourceProgressBody = zod.object({
+  "status": zod.enum(['not_started', 'in_progress', 'completed']),
+  "notes": zod.string().optional()
+})
+
+export const UpdateResourceProgressResponse = zod.object({
+  "id": zod.number(),
+  "profileId": zod.number(),
+  "resourceId": zod.number(),
+  "status": zod.enum(['not_started', 'in_progress', 'completed']),
+  "notes": zod.string().nullish(),
+  "completedAt": zod.coerce.date().nullish(),
+  "createdAt": zod.coerce.date()
 })
 
 

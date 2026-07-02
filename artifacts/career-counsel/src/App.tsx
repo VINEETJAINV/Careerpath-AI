@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 
 import Landing from "@/pages/landing";
+import Dashboard from "@/pages/dashboard";
 import NewProfile from "@/pages/profile/new";
 import ProfileDashboard from "@/pages/profile/dashboard";
 import Assessment from "@/pages/profile/assessment";
@@ -15,6 +16,8 @@ import ChatIndex from "@/pages/chat/index";
 import ChatView from "@/pages/chat/view";
 import Community from "@/pages/community";
 import PublicProfile from "@/pages/public-profile";
+import CompareCareers from "@/pages/compare-careers";
+import Leaderboard from "@/pages/leaderboard";
 
 const queryClient = new QueryClient();
 
@@ -22,6 +25,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Landing} />
+      <Route path="/dashboard" component={Dashboard} />
       <Route path="/profile/new" component={NewProfile} />
       <Route path="/profile/:id" component={ProfileDashboard} />
       <Route path="/profile/:id/assessment" component={Assessment} />
@@ -31,7 +35,9 @@ function Router() {
       <Route path="/chat" component={ChatIndex} />
       <Route path="/chat/:id" component={ChatView} />
       <Route path="/community" component={Community} />
+      <Route path="/community/leaderboard" component={Leaderboard} />
       <Route path="/community/profile/:id" component={PublicProfile} />
+      <Route path="/compare-careers" component={CompareCareers} />
       <Route component={NotFound} />
     </Switch>
   );

@@ -10,6 +10,7 @@ import {
   userSkillsTable,
   learningResourcesTable,
   progressPostsTable,
+  userResourceProgressTable,
 } from "@workspace/db";
 import { openai } from "@workspace/integrations-openai-ai-server";
 
@@ -261,17 +262,32 @@ router.put("/profiles/:id/progress", async (req, res) => {
   const id = Number(req.params.id);
   if (isNaN(id)) { res.status(400).json({ error: "Invalid ID" }); return; }
 
-  const { careerTitle, milestoneIndex, phaseIndex, completed } = req.body as {
+  const {
+    careerTitle,
+    milestoneIndex,
+    phaseIndex,
+    completed,
+    status,
+    progressPercent,
+    notes,
+  } = req.body as {
     careerTitle: string;
     milestoneIndex: number;
     phaseIndex: number;
-    completed: boolean;
+    completed?: boolean;
+    status?: "not_started" | "in_progress" | "completed";
+    progressPercent?: number;
+    notes?: string;
   };
 
   if (!careerTitle || milestoneIndex === undefined || phaseIndex === undefined) {
     res.status(400).json({ error: "Missing required fields" });
     return;
   }
+
+  const effectiveStatus = status ?? (completed ? "completed" : "not_started");
+  const effectiveCompleted = effectiveStatus === "completed" ? 1 : 0;
+  const effectivePercent = progressPercent ?? (effectiveCompleted ? 100 : 0);
 
   try {
     const [existing] = await db
@@ -291,8 +307,12 @@ router.put("/profiles/:id/progress", async (req, res) => {
       [row] = await db
         .update(roadmapProgressTable)
         .set({
-          completed: completed ? 1 : 0,
-          completedAt: completed ? new Date() : null,
+          status: effectiveStatus,
+          progressPercent: effectivePercent,
+          completed: effectiveCompleted,
+          completedAt: effectiveCompleted ? new Date() : null,
+          notes: notes ?? existing.notes,
+          updatedAt: new Date(),
         })
         .where(eq(roadmapProgressTable.id, existing.id))
         .returning();
@@ -304,13 +324,22 @@ router.put("/profiles/:id/progress", async (req, res) => {
           careerTitle,
           milestoneIndex,
           phaseIndex,
-          completed: completed ? 1 : 0,
-          completedAt: completed ? new Date() : null,
+          status: effectiveStatus,
+          progressPercent: effectivePercent,
+          completed: effectiveCompleted,
+          completedAt: effectiveCompleted ? new Date() : null,
+          notes: notes ?? null,
         })
         .returning();
     }
 
-    res.json({ ...row!, completed: row!.completed === 1, completedAt: row!.completedAt?.toISOString() ?? null });
+    res.json({
+      ...row!,
+      completed: row!.completed === 1,
+      completedAt: row!.completedAt?.toISOString() ?? null,
+      createdAt: row!.createdAt.toISOString(),
+      updatedAt: row!.updatedAt.toISOString(),
+    });
   } catch (e) {
     req.log.error(e);
     res.status(500).json({ error: "Failed to update progress" });
@@ -739,6 +768,62 @@ Return ONLY valid JSON array:
   } catch (e) {
     req.log.error(e);
     res.status(500).json({ error: "Failed to generate career resources" });
+  }
+});
+
+// ── Resource progress tracking ────────────────────────────────────────────────
+router.put("/profiles/:id/resources/:resourceId/progress", async (req, res) => {
+  if (!req.isAuthenticated()) { res.status(401).json({ error: "Must be logged in" }); return; }
+  const id = Number(req.params.id);
+  const resourceId = Number(req.params.resourceId);
+  if (isNaN(id) || isNaN(resourceId)) { res.status(400).json({ error: "Invalid ID" }); return; }
+
+  const { status, notes } = req.body as { status?: string; notes?: string };
+  if (!status) { res.status(400).json({ error: "status required" }); return; }
+
+  try {
+    const [existing] = await db
+      .select()
+      .from(userResourceProgressTable)
+      .where(and(
+        eq(userResourceProgressTable.profileId, id),
+        eq(userResourceProgressTable.resourceId, resourceId)
+      ));
+
+    let row;
+    if (existing) {
+      [row] = await db
+        .update(userResourceProgressTable)
+        .set({
+          status,
+          notes: notes ?? existing.notes,
+          completedAt: status === "completed" ? new Date() : existing.completedAt,
+          updatedAt: new Date(),
+        })
+        .where(eq(userResourceProgressTable.id, existing.id))
+        .returning();
+    } else {
+      [row] = await db
+        .insert(userResourceProgressTable)
+        .values({
+          profileId: id,
+          resourceId,
+          status,
+          notes: notes ?? null,
+          completedAt: status === "completed" ? new Date() : null,
+        })
+        .returning();
+    }
+
+    res.json({
+      ...row,
+      completedAt: row.completedAt?.toISOString() ?? null,
+      createdAt: row.createdAt.toISOString(),
+      updatedAt: row.updatedAt.toISOString(),
+    });
+  } catch (e) {
+    req.log.error(e);
+    res.status(500).json({ error: "Failed to update resource progress" });
   }
 });
 

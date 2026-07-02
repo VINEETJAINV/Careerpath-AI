@@ -5,6 +5,7 @@
  * CareerPath AI - Career Counselling Platform API
  * OpenAPI spec version: 0.1.0
  */
+import type { ProgressEntryStatus } from './progressEntryStatus';
 
 export interface ProgressEntry {
   id: number;
@@ -13,6 +14,12 @@ export interface ProgressEntry {
   milestoneIndex: number;
   phaseIndex: number;
   completed: boolean;
+  status: ProgressEntryStatus;
+  progressPercent: number;
+  /** @nullable */
+  notes?: string | null;
   /** @nullable */
   completedAt?: Date | null;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
