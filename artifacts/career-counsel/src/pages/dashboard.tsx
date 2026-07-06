@@ -100,10 +100,17 @@ export default function Dashboard() {
               <p className="text-muted-foreground max-w-md mx-auto">
                 Create a profile, take the AI assessment, and get a personalised career roadmap.
               </p>
-              <div className="flex flex-col gap-3 max-w-xs mx-auto">
-                <Link href="/profile/new">
+              <div className="flex flex-col gap-3 max-w-sm mx-auto">
+                <Link href="/discover">
                   <Button className="w-full" size="lg">
-                    Create Your Profile <ArrowRight className="ml-2 h-4 w-4" />
+                    <Zap className="mr-2 h-4 w-4" />
+                    Help Me Discover My Path
+                  </Button>
+                </Link>
+                <Link href="/profile/new">
+                  <Button className="w-full" size="lg" variant="outline">
+                    I Know My Goal
+                    <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </Link>
                 <p className="text-xs text-muted-foreground">
@@ -142,15 +149,24 @@ export default function Dashboard() {
           <Card className="border-2 shadow-sm">
             <CardContent className="pt-12 pb-8 space-y-6">
               <MapIcon className="h-12 w-12 text-primary mx-auto" />
-              <h1 className="text-2xl font-display font-bold">Create Your First Profile</h1>
+              <h1 className="text-2xl font-display font-bold">Let's Get You Started</h1>
               <p className="text-muted-foreground max-w-md mx-auto">
-                To get personalised career guidance, we need to know a bit about you.
+                To get personalised career guidance, we need to know a bit about you — or you can let our AI figure it out together with you.
               </p>
-              <Link href="/profile/new">
-                <Button size="lg">
-                  Build Your Profile <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
+              <div className="flex flex-col gap-3 max-w-sm mx-auto">
+                <Link href="/discover">
+                  <Button size="lg" className="w-full">
+                    <Zap className="mr-2 h-4 w-4" />
+                    Discover My Path (AI Chat)
+                  </Button>
+                </Link>
+                <Link href="/profile/new">
+                  <Button size="lg" variant="outline" className="w-full">
+                    I Know My Goal
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </Link>
+              </div>
             </CardContent>
           </Card>
         </div>

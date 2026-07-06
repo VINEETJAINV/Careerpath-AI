@@ -210,12 +210,14 @@ export default function NewProfile() {
                     name="goals"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Career Goals</FormLabel>
+                        <FormLabel>
+                          What are you drawn to? <span className="font-normal text-muted-foreground">(optional)</span>
+                        </FormLabel>
                         <FormControl>
-                          <Textarea 
-                            placeholder="Where do you see yourself? What do you want to achieve?" 
-                            className="resize-none" 
-                            {...field} 
+                          <Textarea
+                            placeholder="Even vague thoughts help: 'I like problem solving', 'I want to build things', 'I enjoy helping people' — or just leave this blank if you're not sure yet."
+                            className="resize-none"
+                            {...field}
                             data-testid="input-goals"
                           />
                         </FormControl>
