@@ -73,6 +73,12 @@ export default function NewProfile() {
             <CardDescription className="text-base">
               The more honest you are, the better our guidance will be. Let's get to know you.
             </CardDescription>
+            <p className="text-sm text-muted-foreground pt-1">
+              Not sure what career you want?{" "}
+              <a href="/discover" className="text-primary hover:underline font-medium">
+                Let AI discover it with you instead
+              </a>
+            </p>
           </CardHeader>
           <CardContent className="pt-6">
             <Form {...form}>

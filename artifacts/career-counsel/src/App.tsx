@@ -18,6 +18,7 @@ import Community from "@/pages/community";
 import PublicProfile from "@/pages/public-profile";
 import CompareCareers from "@/pages/compare-careers";
 import Leaderboard from "@/pages/leaderboard";
+import Discover from "@/pages/discover";
 
 const queryClient = new QueryClient();
 
@@ -38,6 +39,7 @@ function Router() {
       <Route path="/community/leaderboard" component={Leaderboard} />
       <Route path="/community/profile/:id" component={PublicProfile} />
       <Route path="/compare-careers" component={CompareCareers} />
+      <Route path="/discover" component={Discover} />
       <Route component={NotFound} />
     </Switch>
   );

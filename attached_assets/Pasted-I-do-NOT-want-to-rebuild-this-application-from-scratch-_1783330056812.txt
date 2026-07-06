@@ -1,0 +1,24 @@
+I do NOT want to rebuild this application from scratch or remove any existing functionality. Everything that currently works should continue to work exactly as it does today.
+
+The missing piece I want to add is BEFORE the roadmap generation.
+
+Currently, the app assumes every user already knows their career goal and asks them to choose one. However, I realized that many users—including myself—come to the app because they DON'T know what career they want. Helping users discover their career path is a core problem that the app should solve.
+
+Add a new "Career Discovery" flow while preserving all existing features.
+
+The user journey should now begin with two options:
+
+1. I already know my career goal.
+2. Help me discover what career suits me.
+
+If the user chooses the first option, the app should follow the existing workflow exactly as it does today, including roadmap generation, learning resources, progress tracking, multiple career paths, authentication, saved progress, and every other current feature.
+
+If the user chooses the second option, launch an AI-powered career discovery experience. Instead of a static questionnaire, the AI should have a natural conversation with the user to understand their interests, strengths, skills, personality, motivations, work preferences, favorite subjects, projects they enjoyed, things they dislike, values, and long-term aspirations.
+
+Based on this conversation, the AI should recommend several suitable career paths with explanations for why each one fits the user. It should compare the careers, explain day-to-day responsibilities, required skills, learning difficulty, salary expectations, job outlook, pros and cons, and allow the user to explore multiple options.
+
+Once the user decides on one or more careers, the app should seamlessly transition into the existing roadmap generation system. From that point onward, all current functionality should continue exactly as it already does.
+
+The discovery feature should be an additional entry point into the existing application, not a replacement. It should integrate naturally with the current UI, database, authentication, progress tracking, and roadmap system without breaking or removing any existing functionality.
+
+Before making changes, analyze the current codebase and architecture so the new feature integrates cleanly with the existing application rather than duplicating or replacing it.

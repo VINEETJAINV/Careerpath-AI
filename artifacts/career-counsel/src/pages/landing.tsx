@@ -52,13 +52,33 @@ export default function Landing() {
               No generic advice. We analyze your real skills, find your blind spots, and build a
               precise roadmap to the career you actually want.
             </p>
-            <div className="pt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link href="/profile/new">
-                <Button size="lg" className="text-lg px-8 py-6 h-auto" data-testid="hero-cta-start">
-                  Get Started
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
-              </Link>
+            <div className="pt-8 flex flex-col items-center gap-4">
+              <div className="flex flex-col sm:flex-row gap-4 w-full max-w-lg justify-center">
+                <Link href="/discover" className="flex-1">
+                  <Button
+                    size="lg"
+                    className="text-base px-6 py-6 h-auto w-full"
+                    data-testid="hero-cta-discover"
+                  >
+                    <Sparkles className="mr-2 h-5 w-5" />
+                    Help me discover my path
+                  </Button>
+                </Link>
+                <Link href="/profile/new" className="flex-1">
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="text-base px-6 py-6 h-auto w-full"
+                    data-testid="hero-cta-start"
+                  >
+                    I know my goal
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Button>
+                </Link>
+              </div>
+              <p className="text-xs text-muted-foreground max-w-sm text-center">
+                Not sure what you want? Choose "discover" — the AI will have a real conversation with you first.
+              </p>
             </div>
             <p className="text-sm text-muted-foreground">
               Already have an account? <LoginLink />

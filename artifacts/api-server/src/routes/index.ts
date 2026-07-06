@@ -8,6 +8,7 @@ import openaiRouter from "./openai-routes";
 import communityRouter from "./community";
 import socialRouter from "./social";
 import followedCareersRouter from "./followed-careers";
+import discoveryRouter from "./discovery";
 
 const router: IRouter = Router();
 
@@ -20,5 +21,6 @@ router.use(openaiRouter);
 router.use(communityRouter);
 router.use(socialRouter);
 router.use(followedCareersRouter);
+router.use(discoveryRouter);
 
 export default router;
